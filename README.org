@@ -1,0 +1,21 @@
+
+* Awesome WM 4.3 Configuration on Laptop
+
+Awesome WM 4.3 configurations used on laptop. Derived originally from Holo theme of [[https://github.com/lcpz/awesome-copycats][awesome-copycats]], the setup and theme evolved in the last two years.
+
+The color theme now features the Carolina blue and other tweaks are according to the guide from this page: [[https://research.unc.edu/communications/branding/colors/][UNC Research Colors]].
+
+More of libraries are from original awesome-copycats and awesome-opacity is also used here to control opacity of each client. I tailored the original awesome-opacity to my needs and the functions maybe totally different from the original version.
+
+My only contribution is the wallpaper package, whose main function is to offer the set random wallpaper periodically when =beautiful.wallpaper= set to a directory. The random wallpaper supports multiple (two currently) profiles and could be toggled from menu (I don't want everyone see an anime girl/boy or some game screenshots on my screen at work).
+
+It also allows user to "show desktop" but this function is a bit buggy (and has been buggy for a long time). If you show the desktop and create a new client before bringing back the old clients, all tags will be selected and you have to reset it (like moving a client to another tag). 
+
+This configuration also comes with a brightness widget as I didn't find a usable library when I wrote it. I am not sure whether there is a better solution but my poorman's version works at least.
+
+* Dependencies
+
+- lfs (LuaFileSystem) is used in wallpaper package to loop through directory
+- light is used to adjust brightness. You could use xbacklight if you're NOT using the modesetting driver.
+
+The other tools like =amixer= should usually come from the distribution.
