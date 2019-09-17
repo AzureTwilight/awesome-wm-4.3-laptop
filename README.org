@@ -19,3 +19,7 @@ This configuration also comes with a brightness widget as I didn't find a usable
 - light is used to adjust brightness. You could use xbacklight if you're NOT using the modesetting driver.
 
 The other tools like =amixer= should usually come from the distribution.
+
+* Screenshot
+
+[[file:./screenshot.png]]
