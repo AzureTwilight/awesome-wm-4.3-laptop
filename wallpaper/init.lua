@@ -13,15 +13,16 @@ M.showDesktopHiddedTags = {}
 M.showDesktopStatus = false
 M.alternativeMode = false
 M.wallpath = beautiful.wallpaper
+M.icon = beautiful.refreshed
 
 M.wallpaper_refresh = function(s, automode)
 
     if (M.wallpath:sub(-1) == "/" or
         lfs.attributes(M.wallpath, "mode") == "directory") then
-       s.wallpaper = M.wallpath .. M.filelist[math.random(#M.filelist)]
+       s.wallpaper = M.filelist[math.random(#M.filelist)]
        naughty.notify({ title = "Wallpaper Refreshed",
                         text  = " Filename:" .. s.wallpaper,
-                        icon  = icon, icon_size = 64,
+                        icon  = M.icon, icon_size = 64,
                         screen = s})
     elseif M.wallpath == "function" then
        s.wallpaper = M.wallpath(s)
@@ -52,16 +53,6 @@ M.wallpaper_refresh = function(s, automode)
     end
 end
 
-local function getFilelist(path)
-   local filelist = {}
-   for file in lfs.dir(path) do
-      if file ~= "." and file ~= ".." then
-         filelist[#filelist+1] = file
-      end
-   end
-   return filelist
-end
-
 M.refresh = function(automode)
 
    local automode = automode or false
@@ -76,17 +67,22 @@ M.refresh = function(automode)
       
    if (M.wallpath:sub(-1) == "/" or
        lfs.attributes(M.wallpath, "mode") == "directory") then
-      M.filelist = getFilelist(M.wallpath)
+      awful.spawn.easy_async(
+         "find " .. M.wallpath,
+         function (out)
+            for s in out:gmatch("[^\r\n]+") do
+               M.filelist[#M.filelist+1] = s
+            end
+
+            for s in screen do
+               M.wallpaper_refresh(s, automode)
+            end
+      end)
+   else
+      for s in screen do
+         M.wallpaper_refresh(s, automode)
+      end
    end
-   
-   local icon = beautiful.refreshed
-   -- naughty.notify({ title = "Wallpaper Refreshed.",
-   --                  text  = "Fresh Wallpaper, Fresh Mood!",
-   --                  icon  = icon, icon_size = 64})
-   for s in screen do
-      M.wallpaper_refresh(s, automode)
-   end
-   M.filelist = {}
 end
 
 M.toggleMode = function()
@@ -99,7 +95,7 @@ M.toggleMode = function()
    end
    naughty.notify({ title = "Wallpaper Mode Changed",
                     text  = "Mode: " .. text,
-                    icon  = icon, icon_size = 64})
+                    icon  = M.icon, icon_size = 64})
    M.refresh(false)
 end
 

@@ -4,6 +4,3 @@
 [submodule "lain"]
 	path = lain
 	url = ./lain/
-[submodule "awesome-opacity"]
-	path = awesome-opacity
-	url = git@github.com:blueyed/awesome-opacity.git
