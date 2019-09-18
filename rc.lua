@@ -727,8 +727,8 @@ awful.rules.rules = {
     { rule = { class = "Firefox" },
       properties = { screen = 1, tag = awful.util.tagnames[1] } },
 
-    { rule = { class = "Emacs" },
-      properties = { opacity = 0.95 }},
+    { rule_any = { class = {"Emacs", "Gnome-terminal"} },
+      properties = { opacity = 0.90 }},
       -- callback=function(c) opacity.set(c, 0.9) end },
 
 

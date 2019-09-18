@@ -17,10 +17,10 @@ local string = string
 local os     = os
 
 local theme                                     = {}
-theme.default_dir                               = require("awful.util").get_themes_dir() .. "default"
-theme.icon_dir                                  = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
-theme.wallpaper                               = os.getenv("HOME") .. "/Pictures/wallpaper/"
-theme.wallpaper_alter                               = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
+theme.default_dir      = require("awful.util").get_themes_dir() .. "default"
+theme.icon_dir         = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
+theme.wallpaper        = os.getenv("HOME") .. "/Pictures/wallpaper/"
+theme.wallpaper_alter  = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
 
 theme.font                                      = "Roboto Bold 8"
 theme.monofont                                  = "Roboto Mono for Powerline Bold 8"
@@ -191,7 +191,7 @@ local mycal = lain.widget.cal({
          fg = "#FFFFFF",
          bg = theme.bg_normal,
          position = "bottom_right",
-         font = "Monospace 10"
+         font = theme.monofont,
       }
 })
 -- Disable mouseover popup
@@ -275,11 +275,9 @@ brightness_text:connect_signal(
       end
 end)
 
--- awful.widget.watch(GET_BRIGHTNESS_CMD, 1, update_brightness_widget, brightness_text)
-
 -- ALSA volume bar
 theme.volume = lain.widget.alsabar({
-	  notification_preset = { font = "Monospace 9", fg = "#FF00FF"},
+	  notification_preset = { font = theme.monofont, fg = "#FF00FF"},
 	  --togglechannel = "IEC958,3",
       cmd = "amixer",
 	  channel = "PCM",
@@ -345,13 +343,19 @@ local net = lain.widget.net({
             local base = math.log(input, 1024)
             
             if tonumber(input) < 1 then
-               return string.format("%6.1f KB", tonumber(input))
+               return string.format("%6.0f KB", tonumber(input))
             else
-               return string.format("%6.1f %s", math.pow(1024, base - math.floor(base)), speedNameList[math.floor(base) + 1])
+               return string.format("%6.0f %s", math.pow(1024, base - math.floor(base)), speedNameList[math.floor(base) + 1])
             end
          end -- of function
          
-         widget:set_markup(markup.font("Roboto 1", " ") .. markup.font(theme.monofont, "⬇ " .. formatSpeed(net_now.received) .. " ⬆ " .. formatSpeed(net_now.sent)) .. markup.font("Roboto 2", " "))
+         widget:set_markup(markup.font(theme.monofont, " ")
+                              .. markup.font(
+                                 theme.monofont,
+                                 "⬇ " .. formatSpeed(net_now.received)
+                                    .. " ⬆ " .. formatSpeed(net_now.sent))
+                              .. markup.font(theme.monofont, " "))
+
       end
 })
 local netbg = wibox.container.background(net.widget, theme.bg_focus, gears.shape.rectangle)
@@ -538,7 +542,11 @@ function theme.at_screen_connect(s)
          s.mypromptbox,
       },
       nil, -- Center widgets
-      mytoprightwibox
+      {
+         layout = wibox.layout.fixed.horizontal,
+         s.mysystray,
+         mytoprightwibox
+      }
    }
    
    -- Create the bottom wibox
@@ -561,11 +569,7 @@ function theme.at_screen_connect(s)
       layout = wibox.layout.align.horizontal,
       nil, -- Left widgets
       s.mytasklist, -- Middle widget
-      { -- Right widgets
-         layout = wibox.layout.fixed.horizontal,
-         s.mysystray,
-         first, first, first
-      },
+      nil -- Right widgets
    }
 
 end
