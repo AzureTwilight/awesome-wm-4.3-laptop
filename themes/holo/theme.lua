@@ -11,7 +11,6 @@
 local screen = screen
 local gears  = require("gears")
 local lain   = require("lain")
--- local helpers   = require("lain.helpers")
 local awful  = require("awful")
 local wibox  = require("wibox")
 local string = string
@@ -20,7 +19,6 @@ local os     = os
 local theme                                     = {}
 theme.default_dir                               = require("awful.util").get_themes_dir() .. "default"
 theme.icon_dir                                  = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
--- theme.wallpaper                               = os.getenv("HOME") .. "/.config/awesome/themes/holo/wall.png"
 theme.wallpaper                               = os.getenv("HOME") .. "/Pictures/wallpaper/"
 theme.wallpaper_alter                               = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
 
@@ -137,7 +135,7 @@ theme.layout_centerworkh = theme.lain_icons .. "/centerworkh.png" -- centerwork.
 
 
 -- Create Jump Menu
-theme.app_menu = function(appClass, newCmd)
+function theme.app_menu(appClass, newCmd)
   local items = {}
   local counter = 1
   local minimizedStatus = ""
@@ -252,27 +250,32 @@ local brightness_widget = wibox.widget {
 local brightness_bg = wibox.container.background(brightness_widget, theme.bg_focus, gears.shape.rectangle)
 local mybrightnesswidget = wibox.container.margin(brightness_bg, 0, 0, 5, 5)
 
-local update_brightness_widget = function(widget, stdout, stderr, exitreason, exitcode)
-    local brightness_level = tonumber(string.format("%.0f", stdout))
-
-    widget:set_markup(
-       space3 ..
-          markup.font(
-             theme.monofont,
-             " BRT " .. brightness_level .. "% ") .. markup.font("Roboto 4", " "))
-    end
+function theme.update_brightness_widget()
+   awful.spawn.easy_async_with_shell(
+      GET_BRIGHTNESS_CMD,
+      function(stdout)
+         local brightness_level = tonumber(string.format("%.0f", stdout))
+         brightness_text:set_markup(
+            space3 ..
+               markup.font(
+                  theme.monofont,
+                  " BRT " .. brightness_level .. "% ") .. markup.font("Roboto 4", " "))
+   end)
+end
 
 brightness_text:connect_signal(
    "button::press",
    function(_,_,_,button)
       if button == 4 then
          awful.spawn(INC_BRIGHTNESS_CMD, false)
+         theme.update_brightness_widget()
       elseif button == 5 then
          awful.spawn(DEC_BRIGHTNESS_CMD, false)
+         theme.update_brightness_widget()
       end
 end)
 
-awful.widget.watch(GET_BRIGHTNESS_CMD, 1, update_brightness_widget, brightness_text)
+-- awful.widget.watch(GET_BRIGHTNESS_CMD, 1, update_brightness_widget, brightness_text)
 
 -- ALSA volume bar
 theme.volume = lain.widget.alsabar({

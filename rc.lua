@@ -233,6 +233,7 @@ gears.timer {
       call_now = true,
       autostart = true,
       callback = function() wallpaper.refresh(false) end}
+beautiful.update_brightness_widget()
 
 -- {{{ Mouse bindings
 root.buttons(awful.util.table.join(
@@ -417,10 +418,18 @@ globalkeys = awful.util.table.join(
     --           {description = "show weather", group = "widgets"}),
 
     -- -- Brightness
-    awful.key({ }, "XF86MonBrightnessUp", function () awful.util.spawn("light -A 5") end,
-              {description = "+5%", group = "hotkeys"}),
-    awful.key({ }, "XF86MonBrightnessDown", function () awful.util.spawn("light -U 5") end,
-              {description = "-5%", group = "hotkeys"}),
+    awful.key({ }, "XF86MonBrightnessUp",
+       function ()
+          awful.util.spawn("light -A 5")
+          beautiful.update_brightness_widget()
+       end,
+       {description = "+5%", group = "hotkeys"}),
+    awful.key({ }, "XF86MonBrightnessDown",
+       function ()
+          awful.util.spawn("light -U 5")
+          beautiful.update_brightness_widget()
+       end,
+       {description = "-5%", group = "hotkeys"}),
 
     -- ALSA volume control
     awful.key({ "Shift" }, "XF86AudioRaiseVolume",
