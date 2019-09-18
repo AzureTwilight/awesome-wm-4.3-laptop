@@ -178,16 +178,20 @@ local function report_monitor(s)
                     text = monitorProps,
                     screen = s})
 end
-
-local function updateFocusWidget()
-   for s in screen do
-      s.focuswidget.checked = (s == awful.screen.focused())
+local updateFocusWidget = function () end
+if hostname == "weyl" then
+   updateFocusWidget = function()
+      for s in screen do
+         s.focuswidget.checked = (s == awful.screen.focused())
+      end
    end
 end
+
 
 local myawesomemenu = {
    { "Refresh Wallpaper",
      function() wallpaper.refresh(false) end},
+   { "Toggle Wallpaper Mode", wallpaper.toggleMode},
    { "Lock",
      "xset dpms force off && xscreensaver-command -lock"},
    { "Turn off Monitor",
@@ -240,15 +244,15 @@ screen.connect_signal("property::geometry", function(s)
        wallpaper.refresh(false)
     end
 end)
-
 -- Start slides wallpaper
 gears.timer {
       timeout = 900,
       call_now = true,
       autostart = true,
       callback = function() wallpaper.refresh(false) end}
--- }}}
-
+if hostname == "Thinkpad" then
+   beautiful.update_brightness_widget()
+end
 
 -- {{{ Mouse bindings
 root.buttons(awful.util.table.join(
@@ -826,7 +830,7 @@ awful.rules.rules = {
     { rule_any = { class = {"feh", "Mathematica", "mpv", "vlc",
                             "MATLAB R2017b - academic use", "libprs500",
                             "Envince", "Nautilus", "onscripter", "Steam",
-                            "Xsane", "matplotlib", "Eog",
+                            "Xsane", "matplotlib", "Eog", "Matplotlib",
                             "org.jabref.JabRefMain" } },
       properties = { floating = true } },
 
@@ -952,14 +956,16 @@ client.connect_signal(
 -- }}}
 
 -- Update the focus indicator
-client.connect_signal(
-   "focus", function(c)
-      updateFocusWidget()
-end)
-client.connect_signal(
-   "property::screen", function(c)
-      updateFocusWidget()
-end)
+if hostname == "weyl" then
+    client.connect_signal(
+    "focus", function(c)
+        updateFocusWidget()
+    end)
+    client.connect_signal(
+    "property::screen", function(c)
+        updateFocusWidget()
+    end)
+end
 
 -- Run App at Startup
 local autorun_path = string.format("%s/.config/awesome/autorun.sh", os.getenv("HOME"))

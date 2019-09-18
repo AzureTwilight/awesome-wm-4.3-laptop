@@ -11,16 +11,22 @@
 local screen = screen
 local gears  = require("gears")
 local lain   = require("lain")
--- local helpers   = require("lain.helpers")
 local awful  = require("awful")
 local wibox  = require("wibox")
 local string = string
 local os     = os
 
+local f = io.popen ("/bin/hostname")
+local hostname = f:read("*a") or ""
+f:close()
+hostname =string.gsub(hostname, "\n$", "")
+
 local theme                                     = {}
+
 theme.default_dir = require("awful.util").get_themes_dir() .. "default"
 theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
-theme.wallpaper   = os.getenv("HOME") .. "/Pictures/Wallpapers/SFW/"
+theme.wallpaper   = os.getenv("HOME") .. "/Pictures/wallpaper/"
+theme.wallpaper_alter = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
 
 theme.font     = "Roboto Bold 10"
 theme.monofont = "Roboto Mono for Powerline Bold 10"
@@ -137,19 +143,22 @@ theme.layout_centerworkh = theme.lain_icons .. "/centerworkh.png" -- centerwork.
 
 -- Create Jump Menu
 local myscreenidx = {}
-for s in screen do
-    if s.geometry.x == 0 then
-        myscreenidx[s.index] = 'L'
-    elseif s.geometry.x == 1080 then
-    myscreenidx[s.index] = 'C'
-    elseif s.geometry.x == 3000 then 
-        myscreenidx[s.index] = 'R'
-    end
+if hostname == "weyl" then
+   for s in screen do
+      if s.geometry.x == 0 then
+         myscreenidx[s.index] = 'L'
+      elseif s.geometry.x == 1080 then
+         myscreenidx[s.index] = 'C'
+      elseif s.geometry.x == 3000 then 
+         myscreenidx[s.index] = 'R'
+      end
+   end
 end
 
 theme.app_menu = function(appClass, newCmd)
    local items = {}
    local minimizedStatus = ""
+   local header = ""
    
    for i, c in pairs(client.get()) do
       if awful.rules.match(c, {class = appClass}) then
@@ -158,19 +167,24 @@ theme.app_menu = function(appClass, newCmd)
          else
             minimized = " "
          end
+
+         if hostname == "weyl" then
+            header = string.format(
+               "%s[%s-%d] %s", minimized, myscreenidx[c.screen.index],
+               c.first_tag.index, c.name)
+         else
+            header = string.format(
+               "%s[%d] %s", minimized, c.first_tag.index, c.name)
+         end
+
          items[#items+1] =
-            {string.format("%s[%s-%d] %s",
-                           minimized, myscreenidx[c.screen.index],
-                           c.first_tag.index, c.name),
-             function()
+            {header, function()
                 c.first_tag:view_only()
                 client.focus = c
-             end,
-             c.icon
-            }
+             end, c.icon}
       end
    end
-   items[counter] = {string.format("Create New %s Client", appClass), newCmd}
+   items[#items+1] = {string.format("Create New %s Client", appClass), newCmd}
 
    local s = awful.screen.focused()
    local x = math.floor(s.geometry.x + s.geometry.width / 2 - theme.menu_width / 2)
@@ -196,12 +210,17 @@ local vpncircle = wibox.widget {
 }
 vpncircle.oldstatus = vpncircle.checked
 
-local vpntext = wibox.widget.textbox(markup("#FFFFFF", space3 .. markup.font(theme.font, "VPN") .. markup.font("Roboto 5", "     ")))
-local vpntextwidget = wibox.container.background(vpntext, theme.bg_focus, gears.shape.rectangle)
+local vpntext = wibox.widget.textbox(
+   markup("#FFFFFF",
+          space3
+             .. markup.font(theme.font, "VPN")))
+local vpntextwidget = wibox.container.background(
+   vpntext, theme.bg_focus, gears.shape.rectangle)
 vpntextwidget = wibox.container.margin(vpntextwidget, 0, 0, 5, 5)
 
 local vpnbg = wibox.container.margin(vpncircle, 0, 0, 2, 2)
-local myvpnwidget = wibox.container.background(vpnbg, theme.bg_focus, gears.shape.rectangle)
+local myvpnwidget = wibox.container.background(
+   vpnbg, theme.bg_focus, gears.shape.rectangle)
 myvpnwidget = wibox.container.margin(myvpnwidget, 0, 0, 5, 5)
 
 
@@ -209,7 +228,10 @@ local vpnConnect = function(location)
    local location = location or ""
    local basecmd = "purevpn -c "
 
-   vpntext:set_markup(markup("#FFFFFF", space3 .. markup.font(theme.font, "Connecting...") .. markup.font("Roboto 5", "     ")))
+   vpntext:set_markup(
+      markup("#FFFFFF",
+             space3
+                .. markup.font(theme.font, "Connecting...")))
    awful.spawn.with_shell(basecmd .. location)
 
    local checkCmd = 't=0; purevpn -s | grep "Not connected"; while [ $? -eq 0 ]; do sleep 0.1; t=$((t+1)); if [ $t -gt 150 ]; then break; fi; purevpn -s | grep "Not connected"; done'
@@ -224,7 +246,7 @@ local vpnConnect = function(location)
                local city = out:match("City:[ ]*([^\n]*)")
                local country = out:match("Country:[^%(]*%(([^%)]*)%)")
                local tmp = city .. ', ' .. country
-               local newlabel = tmp or "VPN"
+               local newlabel = tmp or "VPN  "
                vpntext:set_markup(
                   markup("#FFFFFF",
                          space3
@@ -293,7 +315,7 @@ local mycal = lain.widget.cal({
          fg = "#FFFFFF",
          bg = theme.bg_normal,
          position = "bottom_right",
-         font = theme.monospace, 
+         font = theme.monofont, 
       }
 })
 -- Disable mouseover popup
@@ -303,15 +325,102 @@ mytextcalendar:disconnect_signal("mouse::enter", mycal.hover_on)
 -- MPD
 local mpd_icon = wibox.widget.imagebox(theme.mpdl)
 
+-- Battery
+local bat = lain.widget.bat({
+      timeout = 15,
+      ac = "AC",
+      settings = function()
+         if bat_now.ac_status == 0 then
+            bat_header = " Bat "
+            header_color = "#F5C400"
+         else
+            bat_header = " AC "
+            header_color = "#4E9D2D"
+         end
+
+         if bat_now.status == "Full" then
+            bat_foot = "(Full) "
+         elseif bat_now.status == "Charging" then
+            bat_foot = "(Charging: " .. bat_now.time .. ") " 
+         elseif bat_now.status == "Discharging" then
+            bat_foot = "(Discharging: " .. bat_now.time .. ") " 
+         else
+            bat_foot = "(N/A) "
+         end
+         
+         bat_p      = bat_now.perc .. "% " .. bat_foot
+         widget:set_markup(
+            markup.font(theme.font,
+                        markup(header_color, bat_header) .. bat_p))
+      end
+})
+local batbg = wibox.container.background(bat.widget, theme.bg_focus, gears.shape.rectangle)
+local batwidget = wibox.container.margin(batbg, 0, 0, 5, 5)
+-- batwidget:connect_signal("mouse::enter", function() end)
+
+-- Brightness
+local GET_BRIGHTNESS_CMD = "light -G"   -- "xbacklight -get"
+local INC_BRIGHTNESS_CMD = "light -A 5" -- "xbacklight -inc 5"
+local DEC_BRIGHTNESS_CMD = "light -U 5" -- "xbacklight -dec 5"
+
+local brightness_icon = wibox.widget.imagebox(theme.brightness)
+local brightness_text = wibox.widget.textbox()
+local brightness_widget = wibox.widget {
+    brightness_icon,
+    brightness_text,
+    layout = wibox.layout.fixed.horizontal,
+}
+
+local brightness_bg = wibox.container.background(
+   brightness_widget, theme.bg_focus, gears.shape.rectangle)
+local mybrightnesswidget = wibox.container.margin(brightness_bg, 0, 0, 5, 5)
+
+function theme.update_brightness_widget()
+   awful.spawn.easy_async_with_shell(
+      GET_BRIGHTNESS_CMD,
+      function(stdout)
+         local brightness_level = tonumber(string.format("%.0f", stdout))
+         brightness_text:set_markup(
+            space3 ..
+               markup.font(
+                  theme.monofont,
+                  " BRT " .. brightness_level .. "% ") .. markup.font("Roboto 4", " "))
+   end)
+end
+
+brightness_text:connect_signal(
+   "button::press",
+   function(_,_,_,button)
+      if button == 4 then
+         awful.spawn(INC_BRIGHTNESS_CMD, false)
+         theme.update_brightness_widget()
+      elseif button == 5 then
+         awful.spawn(DEC_BRIGHTNESS_CMD, false)
+         theme.update_brightness_widget()
+      end
+end)
+
+-- awful.widget.watch(GET_BRIGHTNESS_CMD, 1, update_brightness_widget, brightness_text)
+
 -- ALSA volume bar
+local volumeCmd = ""
+local volumeChannel = ""
+if hostname == "weyl" then
+   volumeCmd = "amixer -D pulse"
+   volumeChannel = "Master"
+else
+   volumeCmd = "amixer"
+   volumeChannel = "PCM"
+end
 theme.volume = lain.widget.alsabar({
-	  notification_preset = { font = theme.monofont, fg = "#FF00FF"},
-      cmd = "amixer -D pulse",
-	  channel = "Master",
+	  notification_preset = { font = "Monospace 9", fg = "#FF00FF"},
+	  --togglechannel = "IEC958,3",
+      cmd = volumeCmd,
+	  channel = volumeChannel,
 	  width = 80, height = 10, border_width = 0,
 	  colors = {
-		 background = "#383838",
-		 unmute     = "#80CCE6",
+		 background = "#404040",
+		 unmute     = carolinaBlueWeb,
 		 mute       = "#FF9F9F"
 	  },
 })
@@ -319,13 +428,6 @@ theme.volume.bar.paddings = 0
 theme.volume.bar.margins = 5
 theme.volume.bar:buttons(
    awful.util.table.join(
-    -- awful.button({}, 1, function() -- left click
-    --     awful.spawn(string.format("%s -e alsamixer", terminal))
-    -- end),
-    -- awful.button({}, 2, function() -- middle click
-    --     os.execute(string.format("%s set %s 100%%", volume.cmd, volume.channel))
-    --     volume.update()
-    -- end),
     awful.button({}, 3, function() -- right click
           awful.spawn.with_shell(
              string.format(
@@ -542,15 +644,19 @@ function theme.at_screen_connect(s)
    s.mytag = wibox.container.margin(mytaglistcont, 0, 0, 5, 5)
    
    -- Create the indicator
-   s.focuswidget = wibox.widget {
-      checked       = (s == awful.screen.focused()),
-      color         = green, --beautiful.bg_normal,
-      paddings      = 2,
-      shape         = gears.shape['circle'],
-      widget        = wibox.widget.checkbox,
---    visible       = (s == awful.screen.focused()),
-   }
-   s.myfocuswidget = wibox.container.margin(s.focuswidget, 0, 0, 7, 7)
+   if hostname == "weyl" then
+      s.focuswidget = wibox.widget {
+         checked       = (s == awful.screen.focused()),
+         color         = green, --beautiful.bg_normal,
+         paddings      = 2,
+         shape         = gears.shape['circle'],
+         widget        = wibox.widget.checkbox,
+         --    visible       = (s == awful.screen.focused()),
+      }
+      s.myfocuswidget = wibox.container.margin(s.focuswidget, 0, 0, 7, 7)
+   else
+      s.myfocuswidget = nil
+   end
    
    -- Create a tasklist widget
    s.mytasklist = awful.widget.tasklist(
@@ -569,43 +675,60 @@ function theme.at_screen_connect(s)
    -- Create the wibox
    s.mywibox = awful.wibar({ position = "top", screen = s, height = 32})
    if s == screen.primary then
-      mytoprightwibox = {
-         layout = wibox.layout.fixed.horizontal,
-         mysystraycontainer,
-         spr_right,
-         spr_small,
-         vpntextwidget,
-         myvpnwidget,
-         spr_small,
-         bar,
-         spr_small,
-         -- Net
-         networkwidget,
-         bar,
-         -- cpu & mem
-         cpu_icon,
-         cpuwidget,
-         cpu_icon,
-         memwidget,
-         bar,
-         -- Volume
-         mpd_icon,
-         volumewidget,
-         bar,
-         -- weather
-         spr_small,
-         weathericonwidget,
-         spr_small,
-         weathertextwidget,
-         bar,
-         -- cal
-         calendar_icon,
-         calendarwidget,
-         bar,
-         -- clock
-         clock_icon,
-         clockwidget,
-      }
+      if hostname == "weyl" then
+         mytoprightwibox = {
+            layout = wibox.layout.fixed.horizontal,
+            mysystraycontainer, spr_right, spr_small,
+            vpntextwidget, myvpnwidget,
+            spr_small, bar,
+            -- Net
+            spr_small, networkwidget, bar,
+            -- cpu & mem
+            cpu_icon, cpuwidget, cpu_icon, memwidget,
+            bar,
+            -- Volume
+            mpd_icon, volumewidget,
+            bar,
+            -- weather
+            spr_small, weathericonwidget,
+            spr_small, weathertextwidget,
+            bar,
+            -- cal
+            calendar_icon, calendarwidget,
+            bar,
+            -- clock
+            clock_icon, clockwidget,
+         }
+      else
+         mytoprightwibox = {
+            layout = wibox.layout.fixed.horizontal,
+            mysystraycontainer, spr_right, spr_small,
+            -- Net
+            spr_small, networkwidget,
+            bar,
+            -- bat
+            batwidget,
+            bar,
+            -- cpu & mem
+            cpu_icon, cpuwidget, cpu_icon, memwidget,
+            bar,
+            -- Volume
+            mpd_icon, volumewidget,
+            bar,
+            -- weather
+            spr_small, weathericonwidget,
+            spr_small, weathertextwidget,
+            bar,
+            -- brightness
+            mybrightnesswidget,
+            bar,
+            -- cal
+            calendar_icon, calendarwidget,
+            bar,
+            -- clock
+            clock_icon, clockwidget,
+         }
+      end
    else
       mytoprightwibox = nil
    end
