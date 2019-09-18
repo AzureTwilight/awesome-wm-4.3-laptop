@@ -1,0 +1,6 @@
+[submodule "freedesktop"]
+	path = freedesktop
+	url = ./freedesktop/
+[submodule "lain"]
+	path = lain
+	url = ./lain/
