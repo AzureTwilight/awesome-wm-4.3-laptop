@@ -476,7 +476,8 @@ globalkeys = awful.util.table.join(
        { "Shift" }, "XF86AudioRaiseVolume",
        function ()
           awful.spawn.with_shell(
-             string.format("amixer -q -D pulse set %s 1%%+",
+             string.format("%s -q set %s 1%%+",
+                           beautiful.volume.cmd,
                            beautiful.volume.channel))
           beautiful.volume.update()
        end,
@@ -485,7 +486,8 @@ globalkeys = awful.util.table.join(
        { "Shift" }, "XF86AudioLowerVolume",
        function ()
           awful.spawn.with_shell(
-             string.format("amixer -q -D pulse set %s 1%%-",
+             string.format("%s -q set %s 1%%-",
+                           beautiful.volume.cmd,
                            beautiful.volume.channel))
           beautiful.volume.update()
        end,
@@ -494,38 +496,39 @@ globalkeys = awful.util.table.join(
        { }, "XF86AudioRaiseVolume",
        function ()
           awful.spawn.with_shell(
-             string.format("amixer -q -D pulse set %s 5%%+",
+             string.format("%s -q set %s 5%%+",
+                           beautiful.volume.cmd,
                            beautiful.volume.channel))
           beautiful.volume.update()
        end,
        {description = "volume up", group = "hotkeys"}),
-
     awful.key(
        { }, "XF86AudioLowerVolume",
        function ()
           awful.spawn.with_shell(
-             string.format("amixer -q -D pulse set %s 5%%-",
+             string.format("%s -q set %s 5%%-",
+                           beautiful.volume.cmd,
                            beautiful.volume.channel))
           beautiful.volume.update()
        end,
        {description = "volume down", group = "hotkeys"}),
-
     awful.key(
        { }, "XF86AudioMute",
        function ()
           awful.spawn.with_shell(
              string.format(
-                "amixer -q -D pulse set %s toggle",
+                "%s -q set %s toggle",
+                beautiful.volume.cmd,
                 beautiful.volume.togglechannel or beautiful.volume.channel))
           beautiful.volume.update()
        end,
        {description = "toggle mute", group = "hotkeys"}),
-
     awful.key(
        { altkey }, "XF86AudioMute",
        function ()
           awful.spawn.with_shell(
-             string.format("amixer -q -D pulse set %s 100%%",
+             string.format("%s -q set %s 100%%",
+                           beautiful.volume.cmd,
                            beautiful.volume.channel))
           beautiful.volume.update()
        end,
