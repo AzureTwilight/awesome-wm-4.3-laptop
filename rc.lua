@@ -250,7 +250,7 @@ gears.timer {
       call_now = true,
       autostart = true,
       callback = function() wallpaper.refresh(false) end}
-if hostname == "Thinkpad" then
+if hostname == "ThinkPad" then
    beautiful.update_brightness_widget()
 end
 
@@ -466,10 +466,18 @@ globalkeys = awful.util.table.join(
 
     -- Widgets popups
     -- -- Brightness
-    -- awful.key({ }, "XF86MonBrightnessUp", function () awful.util.spawn("xbacklight -inc 10") end,
-    --           {description = "+10%", group = "hotkeys"}),
-    -- awful.key({ }, "XF86MonBrightnessDown", function () awful.util.spawn("xbacklight -dec 10") end,
-    --           {description = "-10%", group = "hotkeys"}),
+    awful.key({ }, "XF86MonBrightnessUp",
+       function ()
+          awful.util.spawn(beautiful.INC_BRIGHTNESS_CMD)
+          beautiful.update_brightness_widget()
+       end,
+       {description = "+5%", group = "hotkeys"}),
+    awful.key({ }, "XF86MonBrightnessDown",
+       function ()
+          awful.util.spawn(beautiful.DEC_BRIGHTNESS_CMD)
+          beautiful.update_brightness_widget()
+       end,
+       {description = "-5%", group = "hotkeys"}),
 
     -- ALSA volume control
     awful.key(

@@ -99,8 +99,10 @@ theme.layout_max            = theme.icon_dir .. "/max.png"
 theme.layout_fullscreen     = theme.icon_dir .. "/fullscreen.png"
 theme.layout_magnifier      = theme.icon_dir .. "/magnifier.png"
 theme.layout_floating       = theme.icon_dir .. "/floating.png"
+
 theme.refreshed             = theme.icon_dir .. "/refreshed.png"
 theme.warning               = theme.icon_dir .. "/warning.png"
+theme.brightness            = theme.icon_dir .. "/brightness_icon.png"
 
 theme.tasklist_plain_task_name = false
 theme.tasklist_disable_icon    = true
@@ -360,8 +362,8 @@ local batwidget = wibox.container.margin(batbg, 0, 0, 5, 5)
 
 -- Brightness
 local GET_BRIGHTNESS_CMD = "light -G"   -- "xbacklight -get"
-local INC_BRIGHTNESS_CMD = "light -A 5" -- "xbacklight -inc 5"
-local DEC_BRIGHTNESS_CMD = "light -U 5" -- "xbacklight -dec 5"
+theme.INC_BRIGHTNESS_CMD = "light -A 5" -- "xbacklight -inc 5"
+theme.DEC_BRIGHTNESS_CMD = "light -U 5" -- "xbacklight -dec 5"
 
 local brightness_icon = wibox.widget.imagebox(theme.brightness)
 local brightness_text = wibox.widget.textbox()
@@ -392,10 +394,10 @@ brightness_text:connect_signal(
    "button::press",
    function(_,_,_,button)
       if button == 4 then
-         awful.spawn(INC_BRIGHTNESS_CMD, false)
+         awful.spawn(theme.INC_BRIGHTNESS_CMD, false)
          theme.update_brightness_widget()
       elseif button == 5 then
-         awful.spawn(DEC_BRIGHTNESS_CMD, false)
+         awful.spawn(theme.DEC_BRIGHTNESS_CMD, false)
          theme.update_brightness_widget()
       end
 end)
