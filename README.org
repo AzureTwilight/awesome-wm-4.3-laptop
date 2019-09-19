@@ -1,7 +1,13 @@
 
 * Awesome WM 4.3 Configuration
 
-Awesome WM 4.3 configurations used on both laptop and desktop. Derived originally from Holo theme of [[https://github.com/lcpz/awesome-copycats][awesome-copycats]], the setup and theme evolved in the last two years.
+Awesome WM 4.3 configurations used on both laptop and desktop. Derived originally from Holo theme of [[https://github.com/lcpz/awesome-copycats][awesome-copycats]], the setup and theme evolved in the last two years. (The desktop setup is much older and the laptop setup is done recently when I got a new machine, "so long Apple").
+
+* TO-DO 
+
+- [ ] Add wifi indicator & menu
+
+* Introduction
 
 The color theme now features the Carolina blue and other tweaks are according to the guide from this page: [[https://research.unc.edu/communications/branding/colors/][UNC Research Colors]].
 
