@@ -671,13 +671,16 @@ if hostname == "weyl" then
    clientkeys = awful.util.table.join(
       clientkeys,
       awful.key(
-         { modkey, "Control", "Shift" }, "q", function (c) c:move_to_screen(2) end,
+         { modkey, "Control", "Shift" }, "q",
+         function (c) c:move_to_screen(2) end,
          {description = "Move Client to Left Screen", group = "client"}), 
       awful.key(
-         { modkey, "Control", "Shift" }, "w", function (c)  c:move_to_screen(1) end,
+         { modkey, "Control", "Shift" }, "w",
+         function (c)  c:move_to_screen(1) end,
          {description = "Move Client to Middle Screen", group = "client"}), 
       awful.key(
-         { modkey, "Control", "Shift" }, "f", function (c) c:move_to_screen(3) end,
+         { modkey, "Control", "Shift" }, "f",
+         function (c) c:move_to_screen(3) end,
          {description = "Move Client to Right Screen", group = "client"}))
 end
 
@@ -748,7 +751,6 @@ clientbuttons = awful.util.table.join(
     awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
     awful.button({ modkey }, 1, awful.mouse.client.move),
     awful.button({ modkey }, 3, awful.mouse.client.resize))
-
 
 --custom key-bindings
 
