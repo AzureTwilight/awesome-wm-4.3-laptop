@@ -51,11 +51,14 @@ theme.taglist_font     = "Roboto Condensed Regular 10"
 
 theme.tasklist_fg_focus     = carolinaBlueWeb
 theme.tasklist_bg_focus     = "#505050" -- brighter
-theme.tasklist_border_color = "#303030"
+theme.tasklist_border_color = "#505050"
 theme.tasklist_fg_minimize  = "#777777"
 theme.tasklist_floating     = "[F]"
 theme.tasklist_maximized    = "[M]"
 theme.tasklist_ontop        = "[T]"
+theme.tasklist_font         = "Roboto Mono for Powerline 8"
+theme.tasklist_font_focus   = "Roboto Mono for Powerline Bold 8"
+theme.tasklist_disable_icon = true
 
 theme.systray_icon_spacing = 4
 theme.bg_systray = theme.bg_focus
@@ -105,8 +108,6 @@ theme.refreshed             = theme.icon_dir .. "/refreshed.png"
 theme.warning               = theme.icon_dir .. "/warning.png"
 theme.brightness            = theme.icon_dir .. "/brightness_icon.png"
 
-theme.tasklist_plain_task_name = false
-theme.tasklist_disable_icon    = true
 theme.useless_gap              = 0
 
 theme.titlebar_close_button_normal              = theme.default_dir.."/titlebar/close_normal.png"
