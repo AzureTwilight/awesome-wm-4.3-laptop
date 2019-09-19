@@ -671,15 +671,15 @@ function theme.at_screen_connect(s)
         shape_border_color = theme.tasklist_border_color,
         align = "center" })
 
-   s.mysystray = wibox.widget.systray()
-   -- TODO: not sure if this is needed
-   local mysystraybg = wibox.container.background(
-      s.mysystray, theme.bg_focus, gears.shape.rectangle)
-   local mysystraycontainer = wibox.container.margin(mysystraybg, 0, 0, 5, 5)
-
    -- Create the wibox
    s.mywibox = awful.wibar({ position = "top", screen = s, height = 32})
    if s == screen.primary then
+      s.mysystray = wibox.widget.systray()
+      -- TODO: not sure if this is needed
+      local mysystraybg = wibox.container.background(
+         s.mysystray, theme.bg_focus, gears.shape.rectangle)
+      local mysystraycontainer = wibox.container.margin(mysystraybg, 0, 0, 5, 5)
+
       if hostname == "weyl" then
          mytoprightwibox = {
             layout = wibox.layout.fixed.horizontal,
