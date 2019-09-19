@@ -759,14 +759,14 @@ function theme.at_screen_connect(s)
       {position = "bottom",
        screen = s,
        border_width = 0,
-       height = 32})
+       height = 24})
 
-   s.borderwibox = awful.wibar(
-      {position = "bottom",
-       screen = s,
-       height = 1,
-       bg = theme.fg_focus,
-       x = 0, y = 33})
+   -- s.borderwibox = awful.wibar(
+   --    {position = "bottom",
+   --     screen = s,
+   --     height = 1,
+   --     bg = theme.fg_focus,
+   --     x = 0, y = 33})
    
    -- Add widgets to the bottom wibox
    s.mybottomwibox:setup {
