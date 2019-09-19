@@ -5,18 +5,22 @@ Awesome WM 4.3 configurations used on laptop. Derived originally from Holo theme
 
 The color theme now features the Carolina blue and other tweaks are according to the guide from this page: [[https://research.unc.edu/communications/branding/colors/][UNC Research Colors]].
 
-More of libraries are from original awesome-copycats and awesome-opacity is also used here to control opacity of each client. I tailored the original awesome-opacity to my needs and the functions maybe totally different from the original version.
+Most of codes are from original awesome-copycats +and awesome-opacity is also used+ (the =awesome-opacity= is a overkill for my purpose, I just need to change opacity which could be done by setting =c.opacity= property of client)
 
 My only contribution is the wallpaper package, whose main function is to offer the set random wallpaper periodically when =beautiful.wallpaper= set to a directory. The random wallpaper supports multiple (two currently) profiles and could be toggled from menu (I don't want everyone see an anime girl/boy or some game screenshots on my screen at work).
 
 It also allows user to "show desktop" but this function is a bit buggy (and has been buggy for a long time). If you show the desktop and create a new client before bringing back the old clients, all tags will be selected and you have to reset it (like moving a client to another tag). 
 
-This configuration also comes with a brightness widget as I didn't find a usable library when I wrote it. I am not sure whether there is a better solution but my poorman's version works at least.
+This configuration also comes with a few homemade widgets as below. Credits for some lines should go to others but I lost their sources in the long run.
+
+- a brightness widget as I didn't find a usable library when I wrote it. I am not sure whether there is a better solution but my poorman's version works at least.
+- A focus indicator is used to indicate which screen own the focus. There is no signal for such purpose though. The workaround is to connect to client's =focus= and =property::screen=, which count for most of cases. The update is also bounded to the keybindings. The only case where it cannot work in my daily usage is when move the mouse from a client to the root. This could be fixed by connecting to client's =mouse::leave= signal but that will be a overkill in my opinion.
+- A VPN widget allow connecting/disconnecting/indicating VPN connection. I used purevpn but in general case openvpn should work just fine when set accordingly.
 
 * Dependencies
 
-- lfs (LuaFileSystem) is used in wallpaper package to loop through directory
-- light is used to adjust brightness. You could use xbacklight if you're NOT using the modesetting driver.
+- +lfs (LuaFileSystem) is used in wallpaper package to loop through directory+ The wallpaper directory is now loaded using =find= asynchronously, =lfs= is no longer needed.
+- =light= is used to adjust brightness. You could use =xbacklight= if you're NOT using the modesetting driver.
 
 The other tools like =amixer= should usually come from the distribution.
 
