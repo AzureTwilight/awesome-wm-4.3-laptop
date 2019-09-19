@@ -58,6 +58,7 @@ theme.tasklist_maximized    = "[M]"
 theme.tasklist_ontop        = "[T]"
 
 theme.systray_icon_spacing = 4
+theme.bg_systray = theme.bg_focus
 
 theme.notification_icon_size = 64
 theme.notification_opacity   = 0.9
@@ -670,7 +671,10 @@ function theme.at_screen_connect(s)
         align = "center" })
 
    s.mysystray = wibox.widget.systray()
-   mysystraycontainer = wibox.container.margin(s.mysystray, 0, 0, 5, 5)
+   -- TODO: not sure if this is needed
+   local mysystraybg = wibox.container.background(
+      s.mysystray, theme.bg_focus, gears.shape.rectangle)
+   local mysystraycontainer = wibox.container.margin(mysystraybg, 0, 0, 5, 5)
 
    -- Create the wibox
    s.mywibox = awful.wibar({ position = "top", screen = s, height = 32})
@@ -678,9 +682,9 @@ function theme.at_screen_connect(s)
       if hostname == "weyl" then
          mytoprightwibox = {
             layout = wibox.layout.fixed.horizontal,
-            mysystraycontainer, spr_right, spr_small,
-            vpntextwidget, myvpnwidget,
-            spr_small, bar,
+            spr_right, mysystraycontainer, bar,
+            vpntextwidget, spr_small, myvpnwidget,
+            bar,
             -- Net
             spr_small, networkwidget, bar,
             -- cpu & mem
@@ -755,14 +759,14 @@ function theme.at_screen_connect(s)
       {position = "bottom",
        screen = s,
        border_width = 0,
-       height = 32})
+       height = 24})
 
-   s.borderwibox = awful.wibar(
-      {position = "bottom",
-       screen = s,
-       height = 1,
-       bg = theme.fg_focus,
-       x = 0, y = 33})
+   -- s.borderwibox = awful.wibar(
+   --    {position = "bottom",
+   --     screen = s,
+   --     height = 1,
+   --     bg = theme.fg_focus,
+   --     x = 0, y = 33})
    
    -- Add widgets to the bottom wibox
    s.mybottomwibox:setup {
