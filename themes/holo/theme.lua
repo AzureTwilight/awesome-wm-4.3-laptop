@@ -707,9 +707,9 @@ function theme.at_screen_connect(s)
       else
          mytoprightwibox = {
             layout = wibox.layout.fixed.horizontal,
-            mysystraycontainer, spr_right, spr_small,
+            spr_right, mysystraycontainer, bar,
             -- Net
-            spr_small, networkwidget,
+            networkwidget,
             bar,
             -- bat
             batwidget,
