@@ -841,10 +841,9 @@ awful.rules.rules = {
 
 	-- Set floating clients
     { rule_any = { class = {"feh", "Mathematica", "mpv", "vlc",
-                            "MATLAB R2017b - academic use", "libprs500",
-                            "Envince", "Nautilus", "onscripter", "Steam",
-                            "Xsane", "matplotlib", "Eog", "Matplotlib",
-                            "org.jabref.JabRefMain" } },
+                            "libprs500", "Nautilus", "Envince",
+                            "onscripter", "Xsane", "matplotlib",
+                            "Eog", "Matplotlib", "org.jabref.JabRefMain" } },
       properties = { floating = true } },
 
 	-- Set ontop clients
