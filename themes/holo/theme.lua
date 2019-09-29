@@ -497,10 +497,10 @@ local net = lain.widget.net({
             local base = math.log(input, 1024)
             
             if tonumber(input) < 1 then
-               return string.format("%06.1f KB", tonumber(input))
+               return string.format("%6.1f KB", tonumber(input))
             else
                return string.format(
-                  "%06.1f %s",
+                  "%6.1f %s",
                   math.pow(1024, base - math.floor(base)),
                   speedNameList[math.floor(base) + 1])
             end
