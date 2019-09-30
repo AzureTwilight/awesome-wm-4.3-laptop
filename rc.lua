@@ -65,9 +65,9 @@ local altkey       = "Mod1"
 local terminal     = "x-terminal-emulator"
 -- local editor       = os.getenv("EDITOR") or "nano"
 local editor       = os.getenv("EDITOR") or "nano"
-local gui_editor   = "emacsclient -c"
 local browser      = "google-chrome"
 local guieditor    = "emacsclient -c -n"
+
 local f = io.popen ("/bin/hostname")
 local hostname = f:read("*a") or ""
 f:close()
@@ -233,16 +233,10 @@ local myawesomemenu = {
         return false, hotkeys_popup.show_help
      end 
    },
-   { "Manual", terminal .. " -e man awesome" },
+   -- { "Manual", terminal .. " -e man awesome" },
    { "Edit config",
      string.format("%s -e %s %s", terminal, guieditor, awesome.conffile) },
-   { "restart", awesome.restart },
-   { "Report Monitor Props",
-     function()
-        for s in screen do
-           report_monitor(s)
-        end
-   end },
+   { "Restart", awesome.restart },
    { "Quit", function() awesome.quit() end}
 }
 local wallpapermenu = {
@@ -254,9 +248,15 @@ local wallpapermenu = {
      "xset dpms force off && xscreensaver-command -lock"},
    { "Turn off Monitor",
      'xset dpms force off'},
+   { "Report Monitor Props",
+     function()
+        for s in screen do
+           report_monitor(s)
+        end
+   end },
 }
 
-awful.util.mymainmenu = freedesktop.menu.build({
+local mymainmenu = freedesktop.menu.build({
     icon_size = beautiful.menu_height or 16,
     before = {
         { "Wallpaper & Display", wallpapermenu},
@@ -264,7 +264,7 @@ awful.util.mymainmenu = freedesktop.menu.build({
         -- other triads can be put here
     },
     after = {
-	   { "Sound Setting", "unity-control-center sound"},
+	   { "Sound Setting", terminal .. ' -e alsamixer'},
 	   { "Open terminal", terminal },
         -- other triads can be put here
     }
@@ -277,7 +277,7 @@ awful.util.mymainmenu = freedesktop.menu.build({
 
 -- {{{ Mouse bindings
 root.buttons(awful.util.table.join(
-    awful.button({ }, 3, function () awful.util.mymainmenu:toggle() end),
+    awful.button({ }, 3, function () mymainmenu:toggle() end),
     awful.button({ }, 4, awful.tag.viewnext),
     awful.button({ }, 5, awful.tag.viewprev)
 ))
@@ -327,7 +327,7 @@ globalkeys = awful.util.table.join(
     ),
     awful.key(
        { modkey,           }, "w",
-       function () awful.util.mymainmenu:show() end,
+       function () mymainmenu:show() end,
        {description = "show main menu", group = "awesome"}),
     -- Layout manipulation
     awful.key(

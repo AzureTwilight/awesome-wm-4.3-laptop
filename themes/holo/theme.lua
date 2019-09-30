@@ -66,8 +66,8 @@ theme.bg_systray = theme.bg_focus
 theme.notification_icon_size = 64
 theme.notification_opacity   = 0.9
 
-theme.menu_height    = 20
-theme.menu_width     = 160
+theme.menu_height    = 40
+theme.menu_width     = 320
 theme.menu_icon_size = 32
 
 theme.awesome_icon          = theme.icon_dir .. "/awesome_icon_white.png"
