@@ -256,19 +256,24 @@ local wallpapermenu = {
    end },
 }
 
-local mymainmenu = freedesktop.menu.build({
-    icon_size = beautiful.menu_height or 16,
-    before = {
-        { "Wallpaper & Display", wallpapermenu},
+local servicemenu = {
+   { "Restart Dropbox",
+     -- if using the command directly, the dropbox will run but
+     -- the systray will not show up
+     function() awful.spawn.with_shell("dropbox stop && dropbox start") end,},
+   { "Restart Emacs",
+     "systemctl --user restart emacs.service"},
+}
+
+local mymainmenu = awful.menu{
+   items = {
         { "Awesome", myawesomemenu},--, beautiful.awesome_icon },
-        -- other triads can be put here
-    },
-    after = {
-	   { "Sound Setting", terminal .. ' -e alsamixer'},
-	   { "Open terminal", terminal },
-        -- other triads can be put here
-    }
-})
+        { "Wallpaper & Display", wallpapermenu},
+        { "Services", servicemenu},
+        { "Sound Setting", terminal .. ' -e alsamixer'},
+        { "Open terminal", terminal },
+   }
+}
 
 -- Set the Menubar terminal for applications that require it
 -- menubar.utils.terminal = terminal 
