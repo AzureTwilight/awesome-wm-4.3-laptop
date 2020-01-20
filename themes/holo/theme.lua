@@ -13,6 +13,7 @@ local gears  = require("gears")
 local lain   = require("lain")
 local awful  = require("awful")
 local wibox  = require("wibox")
+local naughty= require("naughty")
 local string = string
 local os     = os
 
@@ -330,79 +331,79 @@ mytextcalendar:disconnect_signal("mouse::enter", mycal.hover_on)
 local mpd_icon = wibox.widget.imagebox(theme.mpdl)
 
 -- Battery
-local bat = lain.widget.bat({
-      timeout = 15,
-      ac = "AC",
-      settings = function()
-         if bat_now.ac_status == 0 then
-            bat_header = " Bat "
-            header_color = "#F5C400"
-         else
-            bat_header = " AC "
-            header_color = "#4E9D2D"
-         end
+-- local bat = lain.widget.bat({
+--       timeout = 15,
+--       ac = "AC",
+--       settings = function()
+--          if bat_now.ac_status == 0 then
+--             bat_header = " Bat "
+--             header_color = "#F5C400"
+--          else
+--             bat_header = " AC "
+--             header_color = "#4E9D2D"
+--          end
 
-         if bat_now.status == "Full" then
-            bat_foot = "(Full) "
-         elseif bat_now.status == "Charging" then
-            bat_foot = "(Charging: " .. bat_now.time .. ") " 
-         elseif bat_now.status == "Discharging" then
-            bat_foot = "(Discharging: " .. bat_now.time .. ") " 
-         else
-            bat_foot = "(N/A) "
-         end
+--          if bat_now.status == "Full" then
+--             bat_foot = "(Full) "
+--          elseif bat_now.status == "Charging" then
+--             bat_foot = "(Charging: " .. bat_now.time .. ") " 
+--          elseif bat_now.status == "Discharging" then
+--             bat_foot = "(Discharging: " .. bat_now.time .. ") " 
+--          else
+--             bat_foot = "(N/A) "
+--          end
          
-         bat_p      = bat_now.perc .. "% " .. bat_foot
-         widget:set_markup(
-            markup.font(theme.font,
-                        markup(header_color, bat_header) .. bat_p))
-      end
-})
-local batbg = wibox.container.background(bat.widget, theme.bg_focus, gears.shape.rectangle)
-local batwidget = wibox.container.margin(batbg, 0, 0, 5, 5)
+--          bat_p      = bat_now.perc .. "% " .. bat_foot
+--          widget:set_markup(
+--             markup.font(theme.font,
+--                         markup(header_color, bat_header) .. bat_p))
+--       end
+-- })
+-- local batbg = wibox.container.background(bat.widget, theme.bg_focus, gears.shape.rectangle)
+-- local batwidget = wibox.container.margin(batbg, 0, 0, 5, 5)
 -- batwidget:connect_signal("mouse::enter", function() end)
 
 -- Brightness
-local GET_BRIGHTNESS_CMD = "light -G"   -- "xbacklight -get"
-theme.INC_BRIGHTNESS_CMD = "light -A 5" -- "xbacklight -inc 5"
-theme.DEC_BRIGHTNESS_CMD = "light -U 5" -- "xbacklight -dec 5"
+-- local GET_BRIGHTNESS_CMD = "light -G"   -- "xbacklight -get"
+-- theme.INC_BRIGHTNESS_CMD = "light -A 5" -- "xbacklight -inc 5"
+-- theme.DEC_BRIGHTNESS_CMD = "light -U 5" -- "xbacklight -dec 5"
 
-local brightness_icon = wibox.widget.imagebox(theme.brightness)
-local brightness_text = wibox.widget.textbox()
-local brightness_widget = wibox.widget {
-    brightness_icon,
-    brightness_text,
-    layout = wibox.layout.fixed.horizontal,
-}
+-- local brightness_icon = wibox.widget.imagebox(theme.brightness)
+-- local brightness_text = wibox.widget.textbox()
+-- local brightness_widget = wibox.widget {
+--     brightness_icon,
+--     brightness_text,
+--     layout = wibox.layout.fixed.horizontal,
+-- }
 
-local brightness_bg = wibox.container.background(
-   brightness_widget, theme.bg_focus, gears.shape.rectangle)
-local mybrightnesswidget = wibox.container.margin(brightness_bg, 0, 0, 5, 5)
+-- local brightness_bg = wibox.container.background(
+--    brightness_widget, theme.bg_focus, gears.shape.rectangle)
+-- local mybrightnesswidget = wibox.container.margin(brightness_bg, 0, 0, 5, 5)
 
-function theme.update_brightness_widget()
-   awful.spawn.easy_async_with_shell(
-      GET_BRIGHTNESS_CMD,
-      function(stdout)
-         local brightness_level = tonumber(string.format("%.0f", stdout))
-         brightness_text:set_markup(
-            space3 ..
-               markup.font(
-                  theme.monofont,
-                  " BRT " .. brightness_level .. "% ") .. markup.font("Roboto 4", " "))
-   end)
-end
+-- function theme.update_brightness_widget()
+--    awful.spawn.easy_async_with_shell(
+--       GET_BRIGHTNESS_CMD,
+--       function(stdout)
+--          local brightness_level = tonumber(string.format("%.0f", stdout))
+--          brightness_text:set_markup(
+--             space3 ..
+--                markup.font(
+--                   theme.monofont,
+--                   " BRT " .. brightness_level .. "% ") .. markup.font("Roboto 4", " "))
+--    end)
+-- end
 
-brightness_text:connect_signal(
-   "button::press",
-   function(_,_,_,button)
-      if button == 4 then
-         awful.spawn(theme.INC_BRIGHTNESS_CMD, false)
-         theme.update_brightness_widget()
-      elseif button == 5 then
-         awful.spawn(theme.DEC_BRIGHTNESS_CMD, false)
-         theme.update_brightness_widget()
-      end
-end)
+-- brightness_text:connect_signal(
+--    "button::press",
+--    function(_,_,_,button)
+--       if button == 4 then
+--          awful.spawn(theme.INC_BRIGHTNESS_CMD, false)
+--          theme.update_brightness_widget()
+--       elseif button == 5 then
+--          awful.spawn(theme.DEC_BRIGHTNESS_CMD, false)
+--          theme.update_brightness_widget()
+--       end
+-- end)
 
 -- ALSA volume bar
 local volumeCmd = ""
@@ -455,6 +456,31 @@ theme.volume.bar:buttons(
 local volumewidget = wibox.container.background(
    theme.volume.bar, theme.bg_focus, gears.shape.rectangle)
 volumewidget = wibox.container.margin(volumewidget, 0, 0, 5, 5)
+
+-- GPU
+local gputext = wibox.widget.textbox()
+local gpuUpdate = function()
+   local checkCmd = "gpustat --no-header | awk -F '|' '{print $2 $3}'"
+   -- local checkCmd = 'gpustat --no-header'
+   awful.spawn.easy_async_with_shell(
+      checkCmd,
+      function(out)
+         gputext:set_markup(
+            markup("#FFFFFF",
+                   space3 
+                      .. markup.font(theme.font, ' GPU:' .. out)))
+   end)
+end
+
+local gpuwidget = wibox.container.margin(
+   wibox.container.background(gputext, theme.bg_focus, gears.shape.rectangle),
+   0, 0, 5, 5)
+local gpuTimer = gears.timer {
+   timeout = 2,
+   call_now = true,
+   autostart = false,
+   callback = gpuUpdate}
+gpuTimer:start()
 
 -- CPU
 local cpu_icon = wibox.widget.imagebox(theme.cpu)
@@ -712,10 +738,13 @@ function theme.at_screen_connect(s)
             networkwidget,
             bar,
             -- bat
-            batwidget,
-            bar,
+            -- batwidget,
+            -- bar,
             -- cpu & mem
             cpu_icon, cpuwidget, cpu_icon, memwidget,
+            bar,
+            -- gpu
+            gpuwidget,
             bar,
             -- Volume
             mpd_icon, volumewidget,
@@ -725,8 +754,8 @@ function theme.at_screen_connect(s)
             spr_small, weathertextwidget,
             bar,
             -- brightness
-            mybrightnesswidget,
-            bar,
+            -- mybrightnesswidget,
+            -- bar,
             -- cal
             calendar_icon, calendarwidget,
             bar,

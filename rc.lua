@@ -185,11 +185,11 @@ local wallpaperTimer = gears.timer {
    call_now = true,
    autostart = false,
    callback = function() wallpaper.refresh(false) end}
-
 wallpaperTimer:start()
-if hostname == "ThinkPad" then
-   beautiful.update_brightness_widget()
-end
+
+-- if hostname == "ThinkPad" then
+--    beautiful.update_brightness_widget()
+-- end
 
 -- {{{ Menu
 local function report_monitor(s)
