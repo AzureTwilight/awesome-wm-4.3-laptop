@@ -890,8 +890,13 @@ awful.rules.rules = {
 	  end
 	},
 
+    { rule = { name = "Picture in picture"},
+      properties = { floating = true,
+                     ontop = true,
+                     titlebars_enabled = false}},
+
     { rule = { class = "Gimp", role = "gimp-image-window" },
-          properties = { maximized = true } },
+      properties = { maximized = true } },
 }
 -- }}}
 
