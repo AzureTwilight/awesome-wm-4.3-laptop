@@ -94,7 +94,7 @@ M.update_filelist = function(doRefresh)
 
       
       awful.spawn.easy_async(
-         "find -L " .. M.wallpath .. ' -iname "*.png" -or -iname "*.jpg"',
+         "find -L " .. M.wallpath .. ' -iname "*.png" -or -iname "*.jpg" -or -iname "*.jpeg"',
          function (out)
             for s in out:gmatch("[^\r\n]+") do
                M.filelist[#M.filelist+1] = s
