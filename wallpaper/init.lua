@@ -77,7 +77,9 @@ M.wallpaper_refresh = function(s, automode)
     end
 end
 
-M.update_filelist = function()
+M.update_filelist = function(doRefresh)
+   local doRefresh = doRefresh or true
+   
    if M.alternativeMode then
       M.wallpath = beautiful.wallpaper_alter
    else
@@ -102,8 +104,10 @@ M.update_filelist = function()
                              text  = "Found: " .. #M.filelist .. " items",
                              icon  = M.icon, icon_size = 64})
 
-            for s in screen do
-               M.wallpaper_refresh(s, automode)
+            if doRefresh then
+               for s in screen do
+                  M.wallpaper_refresh(s, automode)
+               end
             end
       end)
    end

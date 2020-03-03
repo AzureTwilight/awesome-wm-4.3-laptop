@@ -243,7 +243,7 @@ local wallpapermenu = {
    { "Refresh Wallpaper",
      function() wallpaper.refresh(false) end},
    { "Toggle Wallpaper Mode", wallpaper.toggleMode},
-   { "Update Wallpaper Files", wallpaper.update_filelist},
+   { "Update Wallpaper Files", function() wallpaper.update_filelist(false) end},
    { "Change Wallpaper Inteval", changeWallpaperInteval},
    { "Lock",
      "xset dpms force off && xscreensaver-command -lock"},
