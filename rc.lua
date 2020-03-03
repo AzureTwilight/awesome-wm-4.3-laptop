@@ -294,6 +294,11 @@ globalkeys = awful.util.table.join(
     -- Take a screenshot
     -- https://github.com/lcpz/dots/blob/master/bin/screenshot
    awful.key(
+      { modkey,  }, "F5",
+      function()    wallpaper.refresh(false) end,
+      {description = "Refresh wallpaper", group = "hotkeys"}),
+
+   awful.key(
       { altkey, "Shift", "Control" }, "3",
       function() awful.spawn.with_shell("screenshot") end,
       {description = "take a screenshot", group = "hotkeys"}),
@@ -676,8 +681,8 @@ clientkeys = awful.util.table.join(
        function (c) c.ontop = not c.ontop end,
        {description = "toggle keep on top", group = "client"}),
     awful.key(
-       { modkey, "Shift"   }, "t", awful.titlebar.toggle,
-       {description = "toggle keep on top", group = "client"}),
+       { modkey, "Control"   }, "t", awful.titlebar.toggle,
+       {description = "toggle titlebar", group = "client"}),
     awful.key(
        { modkey,           }, "n",
         function (c)
