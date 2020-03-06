@@ -174,9 +174,10 @@ awful.screen.connect_for_each_screen(
 
 -- Setup Wallpaper Accordingly
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
+wallpaper.init()
 screen.connect_signal("property::geometry", function(s)
     if beautiful.wallpaper then
-       wallpaper.refresh(false)
+       wallpaper.refresh()
     end
 end)
 -- Start slides wallpaper
@@ -184,7 +185,7 @@ local wallpaperTimer = gears.timer {
    timeout = 900,
    call_now = true,
    autostart = false,
-   callback = function() wallpaper.refresh(false) end}
+   callback = function() wallpaper.refresh() end}
 wallpaperTimer:start()
 
 -- if hostname == "ThinkPad" then
@@ -239,12 +240,7 @@ local myawesomemenu = {
    { "Restart", awesome.restart },
    { "Quit", function() awesome.quit() end}
 }
-local wallpapermenu = {
-   { "Refresh Wallpaper",
-     function() wallpaper.refresh(false) end},
-   { "Toggle Wallpaper Mode", wallpaper.toggleMode},
-   { "Update Wallpaper Files", function() wallpaper.update_filelist() end},
-   { "Change Wallpaper Inteval", changeWallpaperInteval},
+local displaymenu = {
    { "Lock",
      "xset dpms force off && xscreensaver-command -lock"},
    { "Turn off Monitor",
@@ -269,7 +265,8 @@ local servicemenu = {
 local mymainmenu = awful.menu{
    items = {
         { "Awesome", myawesomemenu},--, beautiful.awesome_icon },
-        { "Wallpaper & Display", wallpapermenu},
+        { "Wallpaper", wallpaper.menu},
+        { "Display", displaymenu},
         { "Services", servicemenu},
         { "Sound Setting", terminal .. ' -e alsamixer'},
         { "Open terminal", terminal },
@@ -295,7 +292,7 @@ globalkeys = awful.util.table.join(
     -- https://github.com/lcpz/dots/blob/master/bin/screenshot
    awful.key(
       { modkey,  }, "F5",
-      function()    wallpaper.refresh(false) end,
+      function()    wallpaper.refresh() end,
       {description = "Refresh wallpaper", group = "hotkeys"}),
 
    awful.key(
