@@ -185,11 +185,11 @@ local wallpaperTimer = gears.timer {
    call_now = true,
    autostart = false,
    callback = function() wallpaper.refresh(false) end}
-
 wallpaperTimer:start()
-if hostname == "ThinkPad" then
-   beautiful.update_brightness_widget()
-end
+
+-- if hostname == "ThinkPad" then
+--    beautiful.update_brightness_widget()
+-- end
 
 -- {{{ Menu
 local function report_monitor(s)
@@ -243,6 +243,7 @@ local wallpapermenu = {
    { "Refresh Wallpaper",
      function() wallpaper.refresh(false) end},
    { "Toggle Wallpaper Mode", wallpaper.toggleMode},
+   { "Update Wallpaper Files", function() wallpaper.update_filelist(false) end},
    { "Change Wallpaper Inteval", changeWallpaperInteval},
    { "Lock",
      "xset dpms force off && xscreensaver-command -lock"},
@@ -292,6 +293,11 @@ root.buttons(awful.util.table.join(
 globalkeys = awful.util.table.join(
     -- Take a screenshot
     -- https://github.com/lcpz/dots/blob/master/bin/screenshot
+   awful.key(
+      { modkey,  }, "F5",
+      function()    wallpaper.refresh(false) end,
+      {description = "Refresh wallpaper", group = "hotkeys"}),
+
    awful.key(
       { altkey, "Shift", "Control" }, "3",
       function() awful.spawn.with_shell("screenshot") end,
@@ -675,8 +681,8 @@ clientkeys = awful.util.table.join(
        function (c) c.ontop = not c.ontop end,
        {description = "toggle keep on top", group = "client"}),
     awful.key(
-       { modkey, "Shift"   }, "t", awful.titlebar.toggle,
-       {description = "toggle keep on top", group = "client"}),
+       { modkey, "Control"   }, "t", awful.titlebar.toggle,
+       {description = "toggle titlebar", group = "client"}),
     awful.key(
        { modkey,           }, "n",
         function (c)
@@ -884,8 +890,13 @@ awful.rules.rules = {
 	  end
 	},
 
+    { rule = { name = "Picture in picture"},
+      properties = { floating = true,
+                     ontop = true,
+                     titlebars_enabled = false}},
+
     { rule = { class = "Gimp", role = "gimp-image-window" },
-          properties = { maximized = true } },
+      properties = { maximized = true } },
 }
 -- }}}
 
