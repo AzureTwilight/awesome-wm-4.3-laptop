@@ -17,7 +17,6 @@ local beautiful     = require("beautiful")
 local naughty       = require("naughty")
 local lain          = require("lain")
 --local menubar       = require("menubar")
-local freedesktop   = require("freedesktop")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
 local wallpaper = require("wallpaper")
 -- }}}
@@ -174,9 +173,10 @@ awful.screen.connect_for_each_screen(
 
 -- Setup Wallpaper Accordingly
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
+wallpaper.init()
 screen.connect_signal("property::geometry", function(s)
     if beautiful.wallpaper then
-       wallpaper.refresh(false)
+       wallpaper.refresh()
     end
 end)
 -- Start slides wallpaper
@@ -184,7 +184,7 @@ local wallpaperTimer = gears.timer {
    timeout = 900,
    call_now = true,
    autostart = false,
-   callback = function() wallpaper.refresh(false) end}
+   callback = function() wallpaper.refresh() end}
 wallpaperTimer:start()
 
 -- if hostname == "ThinkPad" then
@@ -213,13 +213,13 @@ end
 
 local function changeWallpaperInteval()
     awful.prompt.run {
-        prompt       = '<b>Wallpaper Inteval: </b>',
+        prompt       = '<b>Wallpaper Inteval (sec): </b>',
         text         = tostring(wallpaperTimer.timeout),
         bg_cursor    = '#ff0000',
         -- To use the default rc.lua prompt:
         textbox      = mouse.screen.mypromptbox.widget,
         exe_callback = function(input)
-            if not input or #input == 0 then return end
+            if not input or #input == 0 then input = 900 end
             naughty.notify{ text = 'Set Wallpaper Inteval: '.. input }
             wallpaperTimer.timeout = input
             wallpaperTimer:again()
@@ -239,12 +239,7 @@ local myawesomemenu = {
    { "Restart", awesome.restart },
    { "Quit", function() awesome.quit() end}
 }
-local wallpapermenu = {
-   { "Refresh Wallpaper",
-     function() wallpaper.refresh(false) end},
-   { "Toggle Wallpaper Mode", wallpaper.toggleMode},
-   { "Update Wallpaper Files", function() wallpaper.update_filelist(false) end},
-   { "Change Wallpaper Inteval", changeWallpaperInteval},
+local displaymenu = {
    { "Lock",
      "xset dpms force off && xscreensaver-command -lock"},
    { "Turn off Monitor",
@@ -269,7 +264,8 @@ local servicemenu = {
 local mymainmenu = awful.menu{
    items = {
         { "Awesome", myawesomemenu},--, beautiful.awesome_icon },
-        { "Wallpaper & Display", wallpapermenu},
+        { "Wallpaper", wallpaper.menu},
+        { "Display", displaymenu},
         { "Services", servicemenu},
         { "Sound Setting", terminal .. ' -e alsamixer'},
         { "Open terminal", terminal },
@@ -295,7 +291,7 @@ globalkeys = awful.util.table.join(
     -- https://github.com/lcpz/dots/blob/master/bin/screenshot
    awful.key(
       { modkey,  }, "F5",
-      function()    wallpaper.refresh(false) end,
+      function()    wallpaper.refresh() end,
       {description = "Refresh wallpaper", group = "hotkeys"}),
 
    awful.key(

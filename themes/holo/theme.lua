@@ -26,8 +26,14 @@ local theme                                     = {}
 
 theme.default_dir = require("awful.util").get_themes_dir() .. "default"
 theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
-theme.wallpaper   = os.getenv("HOME") .. "/Pictures/wallpaper/"
-theme.wallpaper_alter = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
+-- theme.wallpaper   = os.getenv("HOME") .. "/Pictures/wallpaper/"
+-- theme.wallpaper_alter = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
+
+theme.wallpaper = {
+   {"Normal", os.getenv("HOME") .. "/Pictures/wallpaper/", "max"},
+   {"Fuli Girls", os.getenv("HOME") .. "/Pictures/wallpaper-alter/", "fit"},
+   {"HCG-R18", os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/", "fit"}
+}
 
 theme.font     = "Roboto Bold 10"
 theme.monofont = "Roboto Mono for Powerline Bold 10"
