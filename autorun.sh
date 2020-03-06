@@ -6,9 +6,7 @@ function run {
 	fi
 }
 
-run aria2c > /dev/null 2>&1
 run dropbox start > /dev/null 2>&1 
-# run ibus-daemon -drx
 run cmus-daemon
 
 # Load this late
