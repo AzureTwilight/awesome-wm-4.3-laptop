@@ -14,7 +14,6 @@ local M = {}
 
 M.init = function()
    M.filelist = {}
-   M.showDesktopHiddedTags = {}
    M.showDesktopStatus = false
    M.wallpaperMode = "max"
    M.icon = beautiful.refreshed
@@ -170,30 +169,42 @@ M.toggleMode = function(idx)
 end
 
 M.toggleShowDesktop = function()
-   if M.showDesktopStatus then
-      
-      -- Do this at first in case I am confused about what mode I am in
-      for s in screen do
-         for _, t in ipairs(s.selected_tags) do
-            t.selected = false
-         end
-      end
-      
-      for _, t in ipairs(M.showDesktopHiddedTags) do
-         t.selected = true
-      end
-      
-      M.showDesktopHiddedTags = {}
-   else  -- not showing desktop
-      for s in screen do
-         for _, t in ipairs(s.selected_tags) do
-            t.selected = false
-            table.insert(M.showDesktopHiddedTags, t)
-         end
-      end
-   end
    
    M.showDesktopStatus = not M.showDesktopStatus
+   local text
+   if M.showDesktopStatus then
+      text = "on"
+   else
+      text = "off"
+   end
+   naughty.notify({ title = "ShowDesktop Mode Changed",
+                    text  = "Show Desktop: " .. text,
+                    icon  = M.icon, icon_size = 64})
+
+   if M.showDesktopStatus then
+      for s in screen do
+         local wExist = false
+         for _, t in ipairs(s.tags) do
+            if t.name == "W" then
+               t:view_only()
+               wExist = true
+               break
+            end
+         end -- tag in s.tags
+         if not wExist then
+            awful.tag.add("W", {screen = s}):view_only()
+         end
+      end
+   else  -- not showing desktop
+      for s in screen do
+         for _, t in ipairs(s.tags) do
+            if t.name == "W" then
+               t:view_only()
+               t:delete()
+            end
+         end -- tag in s.tags
+      end -- s in screen
+   end
 end
 
 return M
