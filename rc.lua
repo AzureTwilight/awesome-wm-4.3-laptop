@@ -180,13 +180,6 @@ screen.connect_signal("property::geometry", function(s)
        wallpaper.refresh()
     end
 end)
--- Start slides wallpaper
-local wallpaperTimer = gears.timer {
-   timeout = 900,
-   call_now = true,
-   autostart = false,
-   callback = function() wallpaper.refresh() end}
-wallpaperTimer:start()
 
 -- if hostname == "ThinkPad" then
 --    beautiful.update_brightness_widget()
@@ -212,21 +205,6 @@ if hostname == "weyl" then
    end
 end
 
-local function changeWallpaperInteval()
-    awful.prompt.run {
-        prompt       = '<b>Wallpaper Inteval (sec): </b>',
-        text         = tostring(wallpaperTimer.timeout),
-        bg_cursor    = '#ff0000',
-        -- To use the default rc.lua prompt:
-        textbox      = mouse.screen.mypromptbox.widget,
-        exe_callback = function(input)
-            if not input or #input == 0 then input = 900 end
-            naughty.notify{ text = 'Set Wallpaper Inteval: '.. input }
-            wallpaperTimer.timeout = input
-            wallpaperTimer:again()
-        end
-    }
-end
 
 local myawesomemenu = {
    { "Hotkeys",

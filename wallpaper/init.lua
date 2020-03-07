@@ -29,30 +29,55 @@ M.init = function()
    M.icon = beautiful.refreshed
    M.datebaseUpdateLastTime = os.time()
    M.UPDATE_DATABASE_INTERVAL = 3600
-
+   math.randomseed(os.time())
+   
    local toggleMenu = {}
-    if type(beautiful.wallpaper) == "table" then
-       for idx, val in ipairs(beautiful.wallpaper) do
-          table.insert(toggleMenu, {val[1], function() M.toggleMode(idx) end})
-       end
-
+   if type(beautiful.wallpaper) == "table" then
+      for idx, val in ipairs(beautiful.wallpaper) do
+         table.insert(toggleMenu, {val[1], function() M.toggleMode(idx) end})
+      end
+      
       M.wallpaperPath = beautiful.wallpaper[1][2]
       M.wallpaperMode = beautiful.wallpaper[1][3]
-
+      
    else
       M.wallpaperPath = beautiful.wallpaper
    end -- if type(beautiful.wallpaper)
-
-    M.menu = {
-       { "Refresh Wallpaper", function() M.refresh() end},
-       { "Update Wallpaper Files", function() M.updateFilelist() end},
-       { "Change Wallpaper Inteval", function() M.changeWallpaperInteval() end},
-       { "Toggle Wallpaper Gallery", toggleMenu}}
-
    
+   M.menu = {
+      { "Refresh Wallpaper", function() M.refresh() end},
+      { "Update Wallpaper Files", function() M.updateFilelist() end},
+      { "Change Wallpaper Inteval", function() M.changeWallpaperInteval() end},
+      { "Toggle Wallpaper Gallery", toggleMenu}} 
+   
+   M.timer = gears.timer {
+      timeout = 900,
+      call_now = false,
+      autostart = false,
+      callback = function() M.refresh() end}
+   
+   M.timer:start()
+   for s in screen do
+      M.setWallpaper(s)
+   end
 end
 
-
+M.changeWallpaperInteval = function()
+   awful.prompt.run {
+      prompt       = '<b>Wallpaper Inteval (sec): </b>',
+      text         = tostring(M.timer.timeout),
+      bg_cursor    = '#ff0000',
+      -- To use the default rc.lua prompt:
+      textbox      = mouse.screen.mypromptbox.widget,
+      exe_callback = function(input)
+         if not input or #input == 0 then input = 900 end
+         naughty.notify{ text = 'Set Wallpaper Inteval: '.. input }
+         M.timer.timeout = input
+         M.timer:again()
+      end
+   }
+end
+    
 M.setWallpaper = function(s)
 
    s.wallpaper = nil
@@ -60,7 +85,6 @@ M.setWallpaper = function(s)
       s.wallpaper = M.wallpaperPath(s)
    else
       if (M.wallpaperPath:sub(-1) == "/") then
-         math.randomseed(os.time())
          if next(M.filelist) == nil then
             M.updateFilelist(true)
          else
@@ -134,6 +158,7 @@ M.updateFilelist = function(doRefresh)
 end -- end of M.updateFilelist
 
 M.refresh = function()
+   math.randomseed(os.time())
 
    if (M.wallpaperPath:sub(-1) == "/") then
       if os.time() - M.datebaseUpdateLastTime > M.UPDATE_DATABASE_INTERVAL then
@@ -155,7 +180,9 @@ M.toggleMode = function(idx)
    naughty.notify({ title = "Wallpaper Mode Changed",
                     text  = "Path: " .. M.wallpaperPath .. '\nMode: ' .. M.wallpaperMode,
                     icon  = M.icon, icon_size = 64})
-   M.updateFilelist(true)
+   if (M.wallpaperPath:sub(-1) == "/") then
+      M.updateFilelist(true)
+   end
 end
 
 M.toggleShowDesktop = function()
