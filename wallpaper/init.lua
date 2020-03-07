@@ -140,7 +140,9 @@ M.updateFilelist = function(doRefresh)
    end)
 end -- end of M.updateFilelist
 
-M.refresh = function()
+M.refresh = function(resetTimer)
+
+   local resetTimer = resetTimer or false
    
    math.randomseed(os.time())
    if (M.wallpaperPath:sub(-1) == "/") then
@@ -152,6 +154,10 @@ M.refresh = function()
    
    for s in screen do
       M.setWallpaper(s)
+   end
+
+   if resetTimer then
+      M.timer:again()
    end
    
 end

@@ -268,7 +268,7 @@ globalkeys = awful.util.table.join(
     -- https://github.com/lcpz/dots/blob/master/bin/screenshot
    awful.key(
       { modkey,  }, "F5",
-      function()    wallpaper.refresh() end,
+      function()    wallpaper.refresh(true) end,
       {description = "Refresh wallpaper", group = "hotkeys"}),
 
    awful.key(
