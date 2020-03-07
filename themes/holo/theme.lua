@@ -31,7 +31,7 @@ theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
 
 theme.wallpaper = {
    {"Normal", os.getenv("HOME") .. "/Pictures/wallpaper/", "max"},
-   -- {"Fuli Girls", os.getenv("HOME") .. "/Pictures/wallpaper-alter/", "fit"},
+   {"Fuli Girls", os.getenv("HOME") .. "/Pictures/wallpaper-alter/", "fit"},
    {"HCG-R18", os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/", "fit"}
 }
 
