@@ -14,6 +14,7 @@ local M = {}
 
 M.init = function()
    M.filelist = {}
+   M.lastFocusedScreen = nil
    M.showDesktopStatus = false
    M.wallpaperMode = "max"
    M.icon = beautiful.refreshed
@@ -175,9 +176,9 @@ M.toggleMode = function(idx)
 end
 
 M.toggleShowDesktop = function()
+   local text
    
    M.showDesktopStatus = not M.showDesktopStatus
-   local text
    if M.showDesktopStatus then
       text = "on"
    else
@@ -188,6 +189,7 @@ M.toggleShowDesktop = function()
                     icon  = M.icon, icon_size = 64})
 
    if M.showDesktopStatus then
+      M.lastFocusedScreen = awful.screen.focused()
       for s in screen do
          local wExist = false
          for _, t in ipairs(s.tags) do
@@ -206,11 +208,17 @@ M.toggleShowDesktop = function()
          for _, t in ipairs(s.tags) do
             if t.name == "W" then
                t:view_only()
+               for _, c in ipairs(s.clients) do
+                  c:move_to_tag(s.tags[1])
+               end
                t:delete()
             end
          end -- tag in s.tags
       end -- s in screen
+      -- Refocus the last focused screen
+      awful.screen.focus(M.lastFocusedScreen)
    end
-end
+
+end -- M.toggleShowDesktop
 
 return M
