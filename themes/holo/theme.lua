@@ -684,7 +684,7 @@ function theme.at_screen_connect(s)
    s.mytag = wibox.container.margin(mytaglistcont, 0, 0, 5, 5)
    
    -- Create the indicator
-   if hostname == "weyl" then
+   if hostname ~= "Thinkpad" then
       s.focuswidget = wibox.widget {
          checked       = (s == awful.screen.focused()),
          color         = green, --beautiful.bg_normal,

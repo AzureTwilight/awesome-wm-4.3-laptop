@@ -196,7 +196,7 @@ local function report_monitor(s)
                     screen = s})
 end
 local updateFocusWidget = function () end
-if hostname == "weyl" then
+if hostname ~= "Thinkpad" then
    updateFocusWidget = function()
       for s in screen do
          s.focuswidget.checked = (s == awful.screen.focused())
