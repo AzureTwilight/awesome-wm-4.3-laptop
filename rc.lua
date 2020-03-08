@@ -241,12 +241,16 @@ local servicemenu = {
 local mymainmenu = awful.menu{
    items = {
         { "Awesome", myawesomemenu},--, beautiful.awesome_icon },
-        { "Wallpaper", wallpaper.menu},
+        -- { "Wallpaper", wallpaper.menu},
         { "Display", displaymenu},
         { "Services", servicemenu},
         { "Sound Setting", terminal .. ' -e alsamixer'},
         { "Open terminal", terminal },
    }
+}
+
+local mywallpapermenu = awful.menu{
+   items = wallpaper.menu
 }
 
 -- Set the Menubar terminal for applications that require it
@@ -313,6 +317,10 @@ globalkeys = awful.util.table.join(
        { modkey,           }, "w",
        function () mymainmenu:show() end,
        {description = "show main menu", group = "awesome"}),
+    awful.key(
+       { modkey,           }, "d",
+       function () mywallpapermenu:show() end,
+       {description = "show wallpaper menu", group = "awesome"}),
     -- Layout manipulation
     awful.key(
        { modkey, "Shift"   }, "j",
