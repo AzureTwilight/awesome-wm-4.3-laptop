@@ -129,7 +129,9 @@ M.updateFilelist = function(doRefresh)
       function (out)
          
          for s in out:gmatch("[^\r\n]+") do
-            M.filelist[#M.filelist+1] = s
+            if not string.match(s, "ignore") then
+               M.filelist[#M.filelist+1] = s
+            end
          end
          
          naughty.notify({ title = "Wallpaper database updated",
