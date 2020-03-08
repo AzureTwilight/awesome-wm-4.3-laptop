@@ -601,7 +601,10 @@ globalkeys = awful.util.table.join(
 ) -- end of globalkey
 
 local function opacity_adjust(c, delta)
-      c.opacity = c.opacity + delta
+   c.opacity = c.opacity + delta
+   -- if c.class == "Google-chrome" then
+   --    awful.spawn("transset-df -i " .. c.window .. " " .. c.opacity)
+   -- end
 end
 
 clientkeys = awful.util.table.join(
@@ -839,7 +842,7 @@ awful.rules.rules = {
     { rule = { class = "Firefox" },
       properties = { screen = 1, tag = awful.util.tagnames[1] } },
 
-    { rule_any = { class = {"Emacs", "Gnome-terminal"} },
+    { rule_any = { class = {"Emacs", "Gnome-terminal", "Google-chrome"} },
       properties = { opacity = 0.90 }},
       -- callback=function(c) opacity.set(c, 0.9) end },
 
