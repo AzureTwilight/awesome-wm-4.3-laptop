@@ -30,9 +30,15 @@ theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
 -- theme.wallpaper_alter = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
 
 theme.wallpaper = {
-   {"Normal", os.getenv("HOME") .. "/Pictures/wallpaper/", "max"},
-   {"Fuli Girls", os.getenv("HOME") .. "/Pictures/wallpaper-alter/", "fit"},
-   {"HCG-R18", os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/", "fit"}
+   {name="Normal",
+    path=os.getenv("HOME") .. "/Pictures/wallpaper/",
+    mode="max", quite=false},
+   {name="Fuli Girls",
+    path=os.getenv("HOME") .. "/Pictures/wallpaper-alter/",
+    mode="fit", quite=true, interval=30},
+   {name="HCG-R18",
+    path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
+    mode="fit", quite=true, interval=30}
 }
 
 theme.font     = "Roboto Bold 10"
@@ -797,13 +803,6 @@ function theme.at_screen_connect(s)
        border_width = 0,
        height = 24})
 
-   -- s.borderwibox = awful.wibar(
-   --    {position = "bottom",
-   --     screen = s,
-   --     height = 1,
-   --     bg = theme.fg_focus,
-   --     x = 0, y = 33})
-   
    -- Add widgets to the bottom wibox
    s.mybottomwibox:setup {
       layout = wibox.layout.align.horizontal,

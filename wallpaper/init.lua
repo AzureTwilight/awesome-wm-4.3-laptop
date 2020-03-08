@@ -17,6 +17,7 @@ M.init = function()
    M.lastFocusedScreen = nil
    M.showDesktopStatus = false
    M.wallpaperMode = "max"
+   M.quiteMode = false
    M.icon = beautiful.refreshed
    M.datebaseUpdateLastTime = os.time()
    M.UPDATE_DATABASE_INTERVAL = 43200 -- 12h
@@ -26,10 +27,10 @@ M.init = function()
    if type(beautiful.wallpaper) == "table" then
       for idx, val in ipairs(beautiful.wallpaper) do
          table.insert(toggleMenu,
-                      {"[Gallery] " .. val[1], function() M.toggleMode(idx) end})
+                      {"[Gallery] " .. val.name, function() M.toggleMode(idx) end})
       end
-      M.wallpaperPath = beautiful.wallpaper[1][2]
-      M.wallpaperMode = beautiful.wallpaper[1][3]
+      M.wallpaperPath = beautiful.wallpaper[1].path
+      M.wallpaperMode = beautiful.wallpaper[1].mode
    else
       M.wallpaperPath = beautiful.wallpaper
    end -- if type(beautiful.wallpaper)
@@ -37,7 +38,7 @@ M.init = function()
    M.menu = {
       { "Refresh Wallpaper", function() M.refresh() end},
       { "Update Wallpaper Files", function() M.updateFilelist() end},
-      { "Change Wallpaper Inteval", function() M.changeWallpaperInteval() end},
+      { "Change Wallpaper Interval", function() M.changeWallpaperInterval() end},
       { "Toggle Wallpaper Gallery", toggleMenu}}
 
    M.updateFilelist(true)
@@ -50,16 +51,16 @@ M.init = function()
 
 end -- M.init
 
-M.changeWallpaperInteval = function()
+M.changeWallpaperInterval = function()
     awful.prompt.run {
-        prompt       = '<b>Wallpaper Inteval (sec): </b>',
+        prompt       = '<b>Wallpaper Interval (sec): </b>',
         text         = tostring(M.timer.timeout),
         bg_cursor    = '#ff0000',
         -- To use the default rc.lua prompt:
         textbox      = mouse.screen.mypromptbox.widget,
         exe_callback = function(input)
             if not input or #input == 0 then input = 900 end
-            naughty.notify{ text = 'Set Wallpaper Inteval: '.. input }
+            naughty.notify{ text = 'Set Wallpaper Interval: '.. input }
             M.timer.timeout = input
             M.timer:again()
         end
@@ -83,10 +84,12 @@ M.setWallpaper = function(s)
    
    if s.wallpaper ~= nil then
       
-      naughty.notify(
-         { title  = "Wallpaper Refreshed",
-           text   = "Filename:" .. s.wallpaper .. '\nPath:' .. M.wallpaperPath,
-           icon   = M.icon, icon_size = 64, screen = s})
+      if not M.quiteMode then
+        naughty.notify(
+            { title  = "Wallpaper Refreshed",
+            text   = "Filename:" .. s.wallpaper .. '\nPath:' .. M.wallpaperPath,
+            icon   = M.icon, icon_size = 64, screen = s})
+      end
       
       if M.wallpaperMode == "fit" then
          gears.wallpaper.fit(s.wallpaper, s)
@@ -164,29 +167,39 @@ M.refresh = function(resetTimer)
 end
 
 M.toggleMode = function(idx)
-   M.wallpaperPath = beautiful.wallpaper[idx][2]
-   M.wallpaperMode = beautiful.wallpaper[idx][3]
-   
+   M.wallpaperPath = beautiful.wallpaper[idx].path
+   M.wallpaperMode = beautiful.wallpaper[idx].mode
+   M.quiteMode     = beautiful.wallpaper[idx].quite or false
+   local interval  = beautiful.wallpaper[idx].interval or nil
+
+   local quiteMode
+   if M.quiteMode then
+      quiteMode = 'on'
+   else
+      quiteMode = 'off'
+   end
+
    naughty.notify({ title = "Wallpaper Mode Changed",
-                    text  = "Path: " .. M.wallpaperPath .. '\nMode: ' .. M.wallpaperMode,
+                    text  = "Path: " .. M.wallpaperPath
+                       .. '\nMode: ' .. M.wallpaperMode
+                       .. '\nQuite: ' .. quiteMode,
                     icon  = M.icon, icon_size = 64})
    if (M.wallpaperPath:sub(-1) == "/") then
       M.updateFilelist(true)
    end
+
+   if interval then
+      naughty.notify{ text = 'Set Wallpaper Interval: ' .. interval }
+      M.timer.timeout = interval
+      M.timer:again()
+   end
+
 end
 
 M.toggleShowDesktop = function()
    local text
    
    M.showDesktopStatus = not M.showDesktopStatus
-   if M.showDesktopStatus then
-      text = "on"
-   else
-      text = "off"
-   end
-   naughty.notify({ title = "ShowDesktop Mode Changed",
-                    text  = "Show Desktop: " .. text,
-                    icon  = M.icon, icon_size = 64})
 
    if M.showDesktopStatus then
       M.lastFocusedScreen = awful.screen.focused()
