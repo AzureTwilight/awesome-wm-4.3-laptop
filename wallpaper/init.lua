@@ -37,6 +37,7 @@ M.init = function()
    
    M.menu = {
       { "Refresh Wallpaper", function() M.refresh() end},
+      { "Show Wallpaper Info", function() M.showWallpaperInfo(awful.screen.focused()) end},
       { "Update Wallpaper Files", function() M.updateFilelist() end},
       { "Change Wallpaper Interval", function() M.changeWallpaperInterval() end},
       { "Toggle Wallpaper Gallery", toggleMenu}}
@@ -83,13 +84,8 @@ M.setWallpaper = function(s)
    end -- if type(beautiful.wallpaper)
    
    if s.wallpaper ~= nil then
-      
-      if not M.quiteMode then
-        naughty.notify(
-            { title  = "Wallpaper Refreshed",
-            text   = "Filename:" .. s.wallpaper .. '\nPath:' .. M.wallpaperPath,
-            icon   = M.icon, icon_size = 64, screen = s})
-      end
+
+      M.showWallpaperInfo(s)
       
       if M.wallpaperMode == "fit" then
          gears.wallpaper.fit(s.wallpaper, s)
@@ -166,6 +162,15 @@ M.refresh = function(resetTimer)
       M.timer:again()
    end
    
+end
+
+M.showWallpaperInfo = function(s)
+    if not M.quiteMode then
+    naughty.notify(
+        { title  = "Wallpaper Info",
+        text   = "Filename:" .. s.wallpaper .. '\nPath:' .. M.wallpaperPath,
+        icon   = M.icon, icon_size = 64, screen = s})
+    end
 end
 
 M.toggleMode = function(idx)
