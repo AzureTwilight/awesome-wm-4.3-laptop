@@ -221,95 +221,38 @@ local space3 = markup.font("Roboto 3", " ")
 local green = "#32CD32"
 local red   = "#B22222"
 
-local vpncircle = wibox.widget {
-   checked       = false,
-   color         = red,
-   paddings      = 2,
-   shape         = gears.shape['circle'],
-   widget        = wibox.widget.checkbox,
-}
-vpncircle.oldstatus = vpncircle.checked
-
 local vpntext = wibox.widget.textbox(
-   markup("#FFFFFF",
-          space3
-             .. markup.font(theme.font, "VPN")))
+   markup.font(theme.font, "VPN: " .. markup(red, "OFF")))
 local vpntextwidget = wibox.container.background(
    vpntext, theme.bg_focus, gears.shape.rectangle)
 vpntextwidget = wibox.container.margin(vpntextwidget, 0, 0, 5, 5)
 
-local vpnbg = wibox.container.margin(vpncircle, 0, 0, 2, 2)
-local myvpnwidget = wibox.container.background(
-   vpnbg, theme.bg_focus, gears.shape.rectangle)
-myvpnwidget = wibox.container.margin(myvpnwidget, 0, 0, 5, 5)
-
-
-local vpnConnect = function(location)
-   local location = location or ""
-   local basecmd = "purevpn -c "
-
-   vpntext:set_markup(
-      markup("#FFFFFF",
-             space3
-                .. markup.font(theme.font, "Connecting...")))
-   awful.spawn.with_shell(basecmd .. location)
-
-   local checkCmd = 't=0; purevpn -s | grep "Not connected"; while [ $? -eq 0 ]; do sleep 0.1; t=$((t+1)); if [ $t -gt 150 ]; then break; fi; purevpn -s | grep "Not connected"; done'
+theme.vpnUpdate = function()
    awful.spawn.easy_async_with_shell(
-      checkCmd,
+      "/usr/bin/purevpn -s",
       function(out)
-         vpncircle.checked = true
-         vpncircle.color   = green
-         awful.spawn.easy_async_with_shell(
-            "purevpn -i",
-            function(out)
-               local city = out:match("City:[ ]*([^\n]*)")
-               local country = out:match("Country:[^%(]*%(([^%)]*)%)")
-               local tmp = city .. ', ' .. country
-               local newlabel = tmp or "VPN  "
-               vpntext:set_markup(
-                  markup("#FFFFFF",
-                         space3
-                            .. markup.font(theme.font, newlabel)))
-         end)
+         local conn = out:match("Not connected")
+         if conn == nil then -- connected
+            awful.spawn.easy_async_with_shell(
+               "/usr/bin/purevpn -i",
+               function(out)
+                  local city = out:match("City:[ ]*([^\n]*)") or ""
+                  local country = out:match("Country:[^%(]*%(([^%)]*)%)") or ""
+                  local text = markup.font(theme.font,
+                                           "VPN: " .. markup(green, "ON")
+                                              .. " (" .. city .. ", " .. country
+                                              .. ")")
+                  vpntext:set_markup(text)
+            end)
+         else
+            local text = markup.font(theme.font, "VPN: " .. markup(red, "OFF"))
+            vpntext:set_markup(text)
+         end
    end)
 end
-
-local vpnConnectMenu = awful.menu({
-      items = {
-         {"Fast",function() vpnConnect() end},
-         {"China", function() vpnConnect("CN") end},
-         {"US", function() vpnConnect("US") end},
-         {"New Zealand", function() vpnConnect("NZ") end},
-         {"Netherlands", function() vpnConnect("NL") end},
-         {"Japan", function() vpnConnect("JP") end},}})
-
-local function pressVPNCircle()
-   if vpncircle.checked then
-      awful.spawn.with_shell("purevpn -d")
-
-      -- Set status
-      vpncircle.checked = false
-      vpncircle.color   = red
-      vpntext:set_markup(
-         markup("#FFFFFF",
-                space3
-                   .. markup.font(theme.font, "VPN")))
-   else
-      vpnConnectMenu:toggle()
-   end
-end
-vpnbg:connect_signal("button::press", pressVPNCircle)
-vpncircle:connect_signal(
-   "mouse::enter", function() vpncircle.color = blue end)
-vpncircle:connect_signal(
-   "mouse::leave", function()
-      if vpncircle.checked then
-         vpncircle.color = green
-      else
-         vpncircle.color = red
-      end
-end)
+-- helpers.newtimer("vpn", 30, vpnUpdate)
+vpntextwidget:connect_signal(
+   "mouse::enter", function() theme.vpnUpdate() end)
 
 -- Clock
 local mytextclock = wibox.widget.textclock(
@@ -725,6 +668,7 @@ function theme.at_screen_connect(s)
          mytoprightwibox = {
             layout = wibox.layout.fixed.horizontal,
             spr_right, mysystraycontainer, bar,
+            -- VPN
             vpntextwidget, spr_small, myvpnwidget,
             bar,
             -- Net
@@ -749,6 +693,9 @@ function theme.at_screen_connect(s)
          mytoprightwibox = {
             layout = wibox.layout.fixed.horizontal,
             spr_right, mysystraycontainer, bar,
+            -- VPN
+            vpntextwidget, spr_small, myvpnwidget,
+            bar,
             -- Net
             networkwidget,
             bar,
