@@ -93,7 +93,9 @@ M.setWallpaper = function(s)
    
    if s.wallpaper ~= nil then
 
-      M.showWallpaperInfo(s)
+      if not M.quiteMode then
+         M.showWallpaperInfo(s)
+      end
       
       if M.wallpaperMode == "fit" then
          gears.wallpaper.fit(s.wallpaper, s)
