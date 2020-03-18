@@ -60,17 +60,12 @@ run_once({ "unclutter -root -idle 10" }) -- entries must be comma-separated
 -- {{{ Variable definitions
 
 local modkey       = "Mod4"
+local hyperkey     = "Mod3"
 local altkey       = "Mod1"
 local terminal     = "x-terminal-emulator"
--- local editor       = os.getenv("EDITOR") or "nano"
-local editor       = os.getenv("EDITOR") or "nano"
+local editor       = os.getenv("EDITOR") or "vim"
 local browser      = "google-chrome"
 local guieditor    = "emacsclient -c -n"
-
-local f = io.popen ("/bin/hostname")
-local hostname = f:read("*a") or ""
-f:close()
-hostname =string.gsub(hostname, "\n$", "")
 
 awful.util.terminal = terminal
 awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
@@ -334,16 +329,18 @@ globalkeys = awful.util.table.join(
        { modkey,           }, "o",
        function ()
           awful.screen.focus_relative( 1)
+          -- awful.screen.focus_bydirection( 'right')
           updateFocusWidget()
        end,
        {description = "focus the next screen", group = "screen"}),
     awful.key(
-       { modkey, "Shift"   }, "o",
+       { modkey, altkey   }, "o",
        function ()
           awful.screen.focus_relative(-1)
+          -- awful.screen.focus_bydirection( 'left')
           updateFocusWidget()
        end,
-       {description = "focus the next screen", group = "screen"}),
+       {description = "focus the prev screen", group = "screen"}),
     awful.key(
        { modkey,           }, "u",
        awful.client.urgent.jumpto,
@@ -683,23 +680,6 @@ clientkeys = awful.util.table.join(
         {description = "maximize", group = "client"})
 ) -- End of Client Key
 
-if hostname == "weyl" then
-   clientkeys = awful.util.table.join(
-      clientkeys,
-      awful.key(
-         { modkey, "Control", "Shift" }, "q",
-         function (c) c:move_to_screen(2) end,
-         {description = "Move Client to Left Screen", group = "client"}), 
-      awful.key(
-         { modkey, "Control", "Shift" }, "w",
-         function (c)  c:move_to_screen(1) end,
-         {description = "Move Client to Middle Screen", group = "client"}), 
-      awful.key(
-         { modkey, "Control", "Shift" }, "f",
-         function (c) c:move_to_screen(3) end,
-         {description = "Move Client to Right Screen", group = "client"}))
-end
-
 -- Bind all key numbers to tags.
 -- Be careful: we use keycodes to make it works on any keyboard layout.
 -- This should map on the top row of your keyboard, usually 1 to 9.
@@ -763,6 +743,30 @@ for i = 1, 9 do
     )
 end
 
+for i = 1, screen:count() do
+    local descr_view, descr_move
+    if i == 1 or i == screen:count() then
+       descr_view = {description = "view screen #", group = "screen"}
+       descr_move = {description = "move focused client to screen #", group = "screen"}
+    end
+   globalkeys = awful.util.table.join(
+      globalkeys,
+      -- View tag only.
+      awful.key({ hyperkey }, "#" .. i + 9,
+         function ()
+            awful.screen.focus(i)
+            updateFocusWidget()
+         end,
+         descr_view),
+      -- Toggle tag display.
+      awful.key({ hyperkey, altkey }, "#" .. i + 9,
+         function ()
+            client.focus:move_to_screen(i)
+         end,
+         descr_move)
+   )
+end
+
 clientbuttons = awful.util.table.join(
     awful.button({ }, 1, function (c) client.focus = c; c:raise() end),
     awful.button({ modkey }, 1, awful.mouse.client.move),
@@ -792,33 +796,6 @@ globalkeys = awful.util.table.join(
       {description = "Run or Raise Chrome", group = "Application"})
 )
 -- Custom Screen Focus Movement
-
-if hostname == "weyl" then
-   globalkeys = awful.util.table.join(
-      globalkeys,
-      awful.key(
-         { modkey, "Shift" }, "q",
-         function ()
-            awful.screen.focus(2)
-            updateFocusWidget()
-         end,
-         {description = "Move to Left Screen", group = "screen"}), 
-      awful.key(
-         { modkey, "Shift" }, "w",
-         function ()
-            awful.screen.focus(1)
-            updateFocusWidget()
-         end,
-         {description = "Move to Middle Screen", group = "screen"}), 
-      awful.key(
-         { modkey, "Shift" }, "f",
-         function ()
-            awful.screen.focus(3)
-            updateFocusWidget()
-         end,
-         {description = "Move to Right Screen", group = "screen"})
-   )
-end
 
 -- Set keys
 root.keys(globalkeys)
