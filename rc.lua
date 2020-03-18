@@ -266,7 +266,15 @@ globalkeys = awful.util.table.join(
    awful.key(
       { modkey,  }, "F5",
       function()    wallpaper.refresh(true) end,
-      {description = "Refresh wallpaper", group = "hotkeys"}),
+      {description = "Refresh wallpaper (next)", group = "wallpaper"}),
+   awful.key(
+      { modkey,  "Shift" }, "F5",
+      function()    wallpaper.refresh(true, -1) end,
+      {description = "Refresh wallpaper (prev)", group = "wallpaper"}),
+   awful.key(
+      { modkey,  }, "F1",
+      function()    wallpaper.showWallpaperInfo(awful.screen.focused()) end,
+      {description = "Show wallpaper info", group = "wallpaper"}),
 
    awful.key(
       { altkey, "Shift", "Control" }, "3",

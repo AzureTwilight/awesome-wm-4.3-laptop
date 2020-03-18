@@ -76,7 +76,11 @@ M.setWallpaper = function(s)
    else
       if (M.wallpaperPath:sub(-1) == "/") then
          if next(M.filelist) ~= nil then
-            s.wallpaper = M.filelist[math.random(#M.filelist)] 
+            if M.currentIdx == #M.filelist then
+               M.currentIdx = nil -- reset to the beginning
+            end
+            M.currentIdx, s.wallpaper = next(M.filelist, M.currentIdx)
+            s.currentIdx = M.currentIdx
          end
       else
          s.wallpaper = M.wallpaperPath
@@ -142,18 +146,19 @@ M.updateFilelist = function(doRefresh)
    end)
 end -- end of M.updateFilelist
 
-M.refresh = function(resetTimer)
-
+M.refresh = function(resetTimer, shift)
+   -- resetTimer is used when user initiate a refresh
    local resetTimer = resetTimer or false
-   
-   math.randomseed(os.time())
-   if (M.wallpaperPath:sub(-1) == "/") then
-      if os.time() - M.datebaseUpdateLastTime > M.UPDATE_DATABASE_INTERVAL then
-         M.updateFilelist()
-         M.datebaseUpdateLastTime = os.time()
+   local shift = shift or 0
+
+   if M.currentIdx ~= nil then
+      -- twice as the currentIdx is now pointing to the next one
+      M.currentIdx = M.currentIdx + 2 * shift * screen:count()
+      if M.currentIdx < 1 then
+         M.currentIdx = nil
       end
    end
-   
+
    for s in screen do
       M.setWallpaper(s)
    end
@@ -161,22 +166,30 @@ M.refresh = function(resetTimer)
    if resetTimer then
       M.timer:again()
    end
-   
 end
 
 M.showWallpaperInfo = function(s)
-    if not M.quiteMode then
+
+   local curIdx
+   if s.currentIdx ~= nil then
+      curIdx = s.currentIdx
+   else
+      curIdx = 'n/a'
+   end
+
     naughty.notify(
         { title  = "Wallpaper Info",
-        text   = "Filename:" .. s.wallpaper .. '\nPath:' .. M.wallpaperPath,
+          text   = "Filename:" .. s.wallpaper
+             .. '\nPath:' .. M.wallpaperPath
+             .. '\nIndex:' .. curIdx .. " (" .. #M.filelist .. ")",
         icon   = M.icon, icon_size = 64, screen = s})
-    end
 end
 
 M.toggleMode = function(idx)
    M.wallpaperPath = beautiful.wallpaper[idx].path
    M.wallpaperMode = beautiful.wallpaper[idx].mode
    M.quiteMode     = beautiful.wallpaper[idx].quite or false
+   M.filelistCMD   = beautiful.wallpaper[idx].cmd or nil
    local interval  = beautiful.wallpaper[idx].interval or nil
 
    local quiteMode
