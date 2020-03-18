@@ -175,10 +175,6 @@ screen.connect_signal("property::geometry", function(s)
     end
 end)
 
--- if hostname == "ThinkPad" then
---    beautiful.update_brightness_widget()
--- end
-
 -- {{{ Menu
 local function report_monitor(s)
    title = string.format("Monitor %s", s.index)
@@ -191,7 +187,7 @@ local function report_monitor(s)
                     screen = s})
 end
 local updateFocusWidget = function () end
-if hostname ~= "Thinkpad" then
+if screen:count() > 1 then
    updateFocusWidget = function()
       for s in screen do
          s.focuswidget.checked = (s == awful.screen.focused())
@@ -231,6 +227,8 @@ local servicemenu = {
      function() awful.spawn.with_shell("dropbox stop && dropbox start") end,},
    { "Restart Emacs",
      "systemctl --user restart emacs.service"},
+   { "Update VPN Widget",
+     function() beautiful.vpnUpdate() end},
 }
 
 local mymainmenu = awful.menu{
@@ -966,7 +964,7 @@ client.connect_signal(
 -- }}}
 
 -- Update the focus indicator
-if hostname == "weyl" then
+if screen:count() > 1 then
     client.connect_signal(
     "focus", function(c)
         updateFocusWidget()
