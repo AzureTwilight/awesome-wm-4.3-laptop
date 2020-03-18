@@ -1,6 +1,7 @@
 -- Offer functions related to pakcage
 local screen = screen
 local gears         = require("gears")
+local client        = client
 local awful         = require("awful")
 local beautiful     = require("beautiful")
 local naughty       = require("naughty")
@@ -14,13 +15,16 @@ local M = {}
 
 M.init = function()
    M.filelist = {}
+   M.lastFocusedClient = nil
    M.lastFocusedScreen = nil
    M.showDesktopStatus = false
    M.wallpaperMode = "max"
+   M.filelistCMD = nil
    M.quiteMode = false
    M.icon = beautiful.refreshed
-   M.datebaseUpdateLastTime = os.time()
-   M.UPDATE_DATABASE_INTERVAL = 43200 -- 12h
+   -- M.datebaseUpdateLastTime = os.time()
+   -- M.UPDATE_DATABASE_INTERVAL = 43200 -- 12h
+   M.currentIdx = nil
    math.randomseed(os.time())
    
    local toggleMenu = {}
@@ -119,22 +123,52 @@ M.setWallpaper = function(s)
 end
 
 M.updateFilelist = function(doRefresh)
+   local height = 100
+   local width = 500
+   local cmd
    
-   naughty.notify({ title = "Updating wallpaper database",
-                    text  = "Folder: " .. M.wallpaperPath,
-                    icon  = M.icon, icon_size = 64})
+   M.currentIdx = nil
    M.filelist = {}
+
+   if M.filelistCMD ~= nil then
+      cmd = M.filelistCMD
+   else
+      cmd =  "find -L " .. M.wallpaperPath
+         .. ' -iname "*.png" -or -iname "*.jpg" -or -iname "*.jpeg"'
+   end
    awful.spawn.easy_async(
-      "find -L " .. M.wallpaperPath .. ' -iname "*.png" -or -iname "*.jpg" -or -iname "*.jpeg"',
+      cmd,
       function (out)
+         naughty.notify(
+            { title = "Updating wallpaper database",
+              text  = "Folder: " .. M.wallpaperPath,
+              icon  = M.icon, icon_size = 64,})
          
-         for s in out:gmatch("[^\r\n]+") do
-            if not string.match(s, "ignore") then
-               M.filelist[#M.filelist+1] = s
+         
+         if M.filelistCMD ~= nil then
+            for s in out:gmatch("[^\r\n]+") do
+               M.filelist[#M.filelist+1] = M.wallpaperPath .. s
+            end
+         else -- the find return absolute path
+            for s in out:gmatch("[^\r\n]+") do
+                if not string.match(s, "ignore") then
+                   M.filelist[#M.filelist+1] = s
+                end
             end
          end
+
+         naughty.notify({ title = "Shuffling Wallpapers...",
+                          text  = "Found: " .. #M.filelist .. " items",
+                          icon  = M.icon, icon_size = 64})
+
+         -- Fisher-Yates shuffle
+         local j
+         for i = #M.filelist, 2, -1 do
+            j = math.random(i)
+            M.filelist[i], M.filelist[j] = M.filelist[j], M.filelist[i]
+         end
          
-         naughty.notify({ title = "Wallpaper database updated",
+         naughty.notify({ title = "Wallpaper database updated!",
                           text  = "Found: " .. #M.filelist .. " items",
                           icon  = M.icon, icon_size = 64})
          
@@ -208,7 +242,7 @@ M.toggleMode = function(idx)
       M.updateFilelist(true)
    end
 
-   if interval then
+   if interval ~= nil then
       naughty.notify{ text = 'Set Wallpaper Interval: ' .. interval }
       M.timer.timeout = interval
       M.timer:again()
@@ -222,6 +256,7 @@ M.toggleShowDesktop = function()
    M.showDesktopStatus = not M.showDesktopStatus
 
    if M.showDesktopStatus then
+      M.lastFocusedClient = client.focus
       M.lastFocusedScreen = awful.screen.focused()
       for s in screen do
          local wExist = false
@@ -249,6 +284,10 @@ M.toggleShowDesktop = function()
          end -- tag in s.tags
       end -- s in screen
       -- Refocus the last focused screen
+      if M.lastFocusedScreen ~= nil then
+         client.focus = M.lastFocusedClient
+         M.lastFocusedClient:raise()
+      end
       awful.screen.focus(M.lastFocusedScreen)
    end
 
