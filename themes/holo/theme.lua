@@ -14,6 +14,7 @@ local lain   = require("lain")
 local awful  = require("awful")
 local wibox  = require("wibox")
 local naughty= require("naughty")
+local helpers  = require("lain.helpers")
 local string = string
 local os     = os
 
@@ -32,13 +33,15 @@ theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
 theme.wallpaper = {
    {name="Normal",
     path=os.getenv("HOME") .. "/Pictures/wallpaper/",
-    mode="max", quite=false},
+    mode="max", quite=false, interval=900},
    {name="Fuli Girls",
     path=os.getenv("HOME") .. "/Pictures/wallpaper-alter/",
     mode="fit", quite=true, interval=30},
    {name="HCG-R18",
     path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
-    mode="fit", quite=true, interval=30}
+    mode="fit", quite=true, interval=30,
+    cmd="sqlite3 " .. os.getenv("HOME")
+       .. "/Pictures/database.db 'select FilePath from MAIN_TBL;'"}
 }
 
 theme.font     = "Roboto Bold 10"
