@@ -72,7 +72,9 @@ M.changeWallpaperInterval = function()
     }
 end
 
-M.setWallpaper = function(s)
+M.setWallpaper = function(s, f)
+
+   local f = f or nil
    
    s.wallpaper = nil
    if type(M.wallpaperPath) == "function" then
@@ -90,6 +92,14 @@ M.setWallpaper = function(s)
          s.wallpaper = M.wallpaperPath
       end
    end -- if type(beautiful.wallpaper)
+
+   if f ~= nil then
+      if s.wallpaper ~= nil then
+         f:write("Screen " .. s.index .. ": " .. s.wallpaper)
+      else
+         f:write("Screen " .. s.index .. ": nil\n")
+      end
+   end
    
    if s.wallpaper ~= nil then
 
@@ -120,8 +130,11 @@ M.setWallpaper = function(s)
                wallFunc(s.wallpaper, s)
          end)
       end -- if M.wallpaperMode
-      
-   end
+
+      if f ~= nil then
+         f:write(" SET!\n")
+      end
+   end -- if s.wallpaper ~= nil
 end
 
 M.updateFilelist = function(doRefresh)
@@ -175,12 +188,19 @@ M.updateFilelist = function(doRefresh)
                           icon  = M.icon, icon_size = 64})
          
          if doRefresh then
-            for s in screen do
-               M.setWallpaper(s)
-            end
+            M.setAllWallpapers()
          end
    end)
 end -- end of M.updateFilelist
+
+M.setAllWallpapers = function()
+   local f = io.open( os.getenv("HOME") .. "/log/awesome_wallpaper.log", 'a')
+   f:write(os.date("[%Y-%m-%d %H:%M:%S]") .. "\n")
+   for s in screen do
+      M.setWallpaper(s, f)
+   end
+   f:close()
+end 
 
 M.refresh = function(resetTimer, shift)
    -- resetTimer is used when user initiate a refresh
@@ -195,9 +215,7 @@ M.refresh = function(resetTimer, shift)
       end
    end
 
-   for s in screen do
-      M.setWallpaper(s)
-   end
+   M.setAllWallpapers()
 
    if resetTimer then
       M.timer:again()
@@ -286,11 +304,11 @@ M.toggleShowDesktop = function()
          end -- tag in s.tags
       end -- s in screen
       -- Refocus the last focused screen
+      awful.screen.focus(M.lastFocusedScreen)
       if M.lastFocusedScreen ~= nil then
          client.focus = M.lastFocusedClient
          M.lastFocusedClient:raise()
       end
-      awful.screen.focus(M.lastFocusedScreen)
    end
 
 end -- M.toggleShowDesktop
