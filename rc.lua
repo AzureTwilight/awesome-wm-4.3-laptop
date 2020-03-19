@@ -839,9 +839,13 @@ awful.rules.rules = {
     { rule_any = { class = {"Emacs", "Gnome-terminal"} },
       properties = { opacity = 0.90 }},
 
-    { rule_any = { class = {"Google-chrome"} },
+    { rule = { class = "Google-chrome" },
       properties = { opacity = 0.95 }},
 
+    { rule = { class = "Nautilus" },
+      properties = { opacity = 0.95,
+                     titlebars_enabled = false,
+                     requests_no_titlebar = true}},
 
 	-- Set floating clients
     { rule_any = { class = {"feh", "Mathematica", "mpv", "vlc",
