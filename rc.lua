@@ -959,10 +959,12 @@ end)
 -- Enable Auto Title bar when toggle floatinG
 client.connect_signal(
    "property::floating", function (c)
-      if c.floating and not c.maximized then
-         awful.titlebar.show(c)
-      else
-         awful.titlebar.hide(c)
+      if c.class ~= 'Nautilus' then
+        if c.floating and not c.maximized then
+            awful.titlebar.show(c)
+        else
+            awful.titlebar.hide(c)
+        end
       end
 end)
 
