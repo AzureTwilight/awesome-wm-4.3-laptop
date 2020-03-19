@@ -18,11 +18,6 @@ local helpers  = require("lain.helpers")
 local string = string
 local os     = os
 
-local f = io.popen ("/bin/hostname")
-local hostname = f:read("*a") or ""
-f:close()
-hostname =string.gsub(hostname, "\n$", "")
-
 local theme                                     = {}
 
 theme.default_dir = require("awful.util").get_themes_dir() .. "default"
@@ -107,18 +102,20 @@ theme.calendar              = theme.icon_dir .. "/cal.png"
 theme.cpu                   = theme.icon_dir .. "/cpu.png"
 theme.net_up                = theme.icon_dir .. "/net_up.png"
 theme.net_down              = theme.icon_dir .. "/net_down.png"
-theme.layout_tile           = theme.icon_dir .. "/tile.png"
-theme.layout_tileleft       = theme.icon_dir .. "/tileleft.png"
-theme.layout_tilebottom     = theme.icon_dir .. "/tilebottom.png"
-theme.layout_tiletop        = theme.icon_dir .. "/tiletop.png"
-theme.layout_fairv          = theme.icon_dir .. "/fairv.png"
-theme.layout_fairh          = theme.icon_dir .. "/fairh.png"
-theme.layout_spiral         = theme.icon_dir .. "/spiral.png"
-theme.layout_dwindle        = theme.icon_dir .. "/dwindle.png"
-theme.layout_max            = theme.icon_dir .. "/max.png"
-theme.layout_fullscreen     = theme.icon_dir .. "/fullscreen.png"
-theme.layout_magnifier      = theme.icon_dir .. "/magnifier.png"
-theme.layout_floating       = theme.icon_dir .. "/floating.png"
+-- theme.layout_tile           = theme.icon_dir .. "/tile.png"
+-- theme.layout_tileleft       = theme.icon_dir .. "/tileleft.png"
+-- theme.layout_tilebottom     = theme.icon_dir .. "/tilebottom.png"
+-- theme.layout_tiletop        = theme.icon_dir .. "/tiletop.png"
+-- theme.layout_fairv          = theme.icon_dir .. "/fairv.png"
+-- theme.layout_fairh          = theme.icon_dir .. "/fairh.png"
+-- theme.layout_spiral         = theme.icon_dir .. "/spiral.png"
+-- theme.layout_dwindle        = theme.icon_dir .. "/dwindle.png"
+-- theme.layout_max            = theme.icon_dir .. "/max.png"
+-- theme.layout_fullscreen     = theme.icon_dir .. "/fullscreen.png"
+-- theme.layout_magnifier      = theme.icon_dir .. "/magnifier.png"
+-- theme.layout_floating       = theme.icon_dir .. "/floating.png"
+theme.layout_tile           = theme.icon_dir .. "/mytile.png"
+theme.layout_floating       = theme.icon_dir .. "/myfloating.png"
 
 theme.refreshed             = theme.icon_dir .. "/refreshed.png"
 theme.warning               = theme.icon_dir .. "/warning.png"
@@ -151,30 +148,21 @@ theme.titlebar_bg_normal = theme.bg_normal .. "E6"
 
 -- theme.musicplr = string.format("%s -e ncmpcpp", awful.util.terminal)
 
-theme.lain_icons         = os.getenv("HOME") .. "/.config/awesome/lain/icons/layout/default"
-theme.layout_termfair    = theme.lain_icons .. "/termfair.png"
-theme.layout_centerfair  = theme.lain_icons .. "/centerfair.png"  -- termfair.center
-theme.layout_cascade     = theme.lain_icons .. "/cascade.png"
-theme.layout_cascadetile = theme.lain_icons .. "/cascadetile.png" -- cascade.tile
--- theme.layout_centerwork  = theme.lain_icons .. "centerwork.png"
-theme.layout_centerwork  = theme.icon_dir .. "/mycenterwork.png"
-theme.layout_centerworkh = theme.lain_icons .. "/centerworkh.png" -- centerwork.horizontal
+-- theme.lain_icons         = os.getenv("HOME") .. "/.config/awesome/lain/icons/layout/default"
+-- theme.layout_termfair    = theme.lain_icons .. "/termfairw.png"
+-- theme.layout_centerfair  = theme.lain_icons .. "/centerfairw.png"  -- termfair.center
+-- theme.layout_cascade     = theme.lain_icons .. "/cascadew.png"
+-- theme.layout_cascadetile = theme.lain_icons .. "/cascadetilew.png" -- cascade.tile
+-- -- theme.layout_centerwork  = theme.lain_icons .. "/centerworkw.png"
+-- -- theme.layout_centerwork  = theme.icon_dir .. "/mycenterwork.png"
+-- theme.layout_centerworkh = theme.lain_icons .. "/centerworkhw.png" -- centerwork.horizontal
 
+theme.layout_termfair    = theme.icon_dir .. "/mytermfair.png"
+theme.layout_centerfair  = theme.icon_dir .. "/mycenterfair.png"  -- termfair.center
+theme.layout_cascade     = theme.icon_dir .. "/mycascade.png"
+theme.layout_centerwork  = theme.icon_dir .. "/mycenterwork.png"
 
 -- Create Jump Menu
-local myscreenidx = {}
-if hostname == "weyl" then
-   for s in screen do
-      if s.geometry.x == 0 then
-         myscreenidx[s.index] = 'L'
-      elseif s.geometry.x == 1080 then
-         myscreenidx[s.index] = 'C'
-      elseif s.geometry.x == 3000 then 
-         myscreenidx[s.index] = 'R'
-      end
-   end
-end
-
 theme.app_menu = function(appClass, newCmd)
    local items = {}
    local minimizedStatus = ""
@@ -188,14 +176,9 @@ theme.app_menu = function(appClass, newCmd)
             minimized = " "
          end
 
-         if hostname == "weyl" then
-            header = string.format(
-               "%s[%s-%d] %s", minimized, myscreenidx[c.screen.index],
-               c.first_tag.index, c.name)
-         else
-            header = string.format(
-               "%s[%d] %s", minimized, c.first_tag.index, c.name)
-         end
+        header = string.format(
+            "%s[S%d-%d] %s",
+            minimized, c.screen.index, c.first_tag.index, c.name)
 
          items[#items+1] =
             {header, function()
@@ -250,7 +233,6 @@ theme.vpnUpdate = function()
          end
    end)
 end
--- helpers.newtimer("vpn", 30, vpnUpdate)
 vpntextwidget:connect_signal(
    "mouse::enter", function() theme.vpnUpdate() end)
 
@@ -364,15 +346,8 @@ local mpd_icon = wibox.widget.imagebox(theme.mpdl)
 -- end)
 
 -- ALSA volume bar
-local volumeCmd = ""
-local volumeChannel = ""
-if hostname == "weyl" then
-   volumeCmd = "amixer -D pulse"
-   volumeChannel = "Master"
-else
-   volumeCmd = "amixer"
-   volumeChannel = "PCM"
-end
+local volumeCmd = "amixer"
+local volumeChannel = "PCM"
 theme.volume = lain.widget.alsabar({
 	  notification_preset = { font = theme.monofont, fg = "#FF00FF"},
 	  --togglechannel = "IEC958,3",
@@ -620,6 +595,10 @@ function theme.at_screen_connect(s)
          awful.button({ }, 4, function () awful.layout.inc( 1) end),
          awful.button({ }, 5, function () awful.layout.inc(-1) end)))
 
+   mylayoutcont = wibox.container.background(
+      s.mylayoutbox, theme.bg_focus, gears.shape.rectangle)
+   s.mylayout = wibox.container.margin(mylayoutcont, 0, 0, 5, 5)
+
    -- Create a taglist widget
    s.mytaglist = awful.widget.taglist(
       s, awful.widget.taglist.filter.all,
@@ -630,7 +609,7 @@ function theme.at_screen_connect(s)
    s.mytag = wibox.container.margin(mytaglistcont, 0, 0, 5, 5)
    
    -- Create the indicator
-   if hostname ~= "Thinkpad" then
+   if screen:count() > 1 then
       s.focuswidget = wibox.widget {
          checked       = (s == awful.screen.focused()),
          color         = green, --beautiful.bg_normal,
@@ -663,68 +642,41 @@ function theme.at_screen_connect(s)
       local mysystraybg = wibox.container.background(
          s.mysystray, theme.bg_focus, gears.shape.rectangle)
       local mysystraycontainer = wibox.container.margin(mysystraybg, 0, 0, 5, 5)
-
-      if hostname == "weyl" then
-         mytoprightwibox = {
-            layout = wibox.layout.fixed.horizontal,
-            spr_right, mysystraycontainer, bar,
-            -- VPN
-            vpntextwidget, spr_small, myvpnwidget,
-            bar,
-            -- Net
-            spr_small, networkwidget, bar,
-            -- cpu & mem
-            cpu_icon, cpuwidget, cpu_icon, memwidget,
-            bar,
-            -- Volume
-            mpd_icon, volumewidget,
-            bar,
-            -- weather
-            spr_small, weathericonwidget,
-            spr_small, weathertextwidget,
-            bar,
-            -- cal
-            calendar_icon, calendarwidget,
-            bar,
-            -- clock
-            clock_icon, clockwidget,
-         }
-      else
-         mytoprightwibox = {
-            layout = wibox.layout.fixed.horizontal,
-            spr_right, mysystraycontainer, bar,
-            -- VPN
-            vpntextwidget, spr_small, myvpnwidget,
-            bar,
-            -- Net
-            networkwidget,
-            bar,
-            -- bat
-            -- batwidget,
-            -- bar,
-            -- cpu & mem
-            cpu_icon, cpuwidget, cpu_icon, memwidget,
-            bar,
-            -- gpu
-            gpuwidget,
-            bar,
-            -- Volume
-            mpd_icon, volumewidget,
-            bar,
-            -- weather
-            spr_small, weathericonwidget,
-            spr_small, weathertextwidget,
-            bar,
-            -- brightness
-            -- mybrightnesswidget,
-            -- bar,
-            -- cal
-            calendar_icon, calendarwidget,
-            bar,
-            -- clock
-            clock_icon, clockwidget,
-         }
-      end
+      
+      mytoprightwibox = {
+         layout = wibox.layout.fixed.horizontal,
+         spr_right, mysystraycontainer, bar,
+         -- VPN
+         vpntextwidget, spr_small, myvpnwidget,
+         bar,
+         -- Net
+         networkwidget,
+         bar,
+         -- bat
+         -- batwidget,
+         -- bar,
+         -- cpu & mem
+         cpu_icon, cpuwidget, cpu_icon, memwidget,
+         bar,
+         -- gpu
+         gpuwidget,
+         bar,
+         -- Volume
+         mpd_icon, volumewidget,
+         bar,
+         -- weather
+         spr_small, weathericonwidget,
+         spr_small, weathertextwidget,
+         bar,
+         -- brightness
+         -- mybrightnesswidget,
+         -- bar,
+         -- cal
+         calendar_icon, calendarwidget,
+         bar,
+         -- clock
+         clock_icon, clockwidget,
+      }
    else
       mytoprightwibox = nil
    end
@@ -738,8 +690,10 @@ function theme.at_screen_connect(s)
          spr_right,
          s.mytag,
          spr_small,
-         s.mylayoutbox,
-         spr_small,
+         -- s.mylayoutbox,
+         s.mylayout,
+         bar,
+         -- spr_small,
          s.mypromptboxcontainer,
       },
       nil, -- Center widgets
