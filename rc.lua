@@ -159,6 +159,7 @@ lain.layout.cascade.tile.ncol          = 2
 local theme_path = string.format(
    "%s/.config/awesome/themes/holo/theme.lua", os.getenv("HOME"))
 beautiful.init(theme_path)
+
 -- }}}
 
 -- {{{ Screen

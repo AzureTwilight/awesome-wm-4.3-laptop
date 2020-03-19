@@ -36,7 +36,7 @@ theme.wallpaper = {
     path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
     mode="fit", quite=true, interval=30,
     cmd="sqlite3 " .. os.getenv("HOME")
-       .. "/Pictures/database.db 'select FilePath from MAIN_TBL;'"}
+       .. "/Pictures/database.db 'select FilePath from MAIN_TBL where WALLPAPER=0;'"}
 }
 
 theme.font     = "Roboto Bold 10"
