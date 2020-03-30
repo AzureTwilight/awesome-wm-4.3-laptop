@@ -84,6 +84,8 @@ theme.bg_systray = theme.bg_focus_bare
 theme.notification_icon_size = 64
 theme.notification_opacity   = 0.9
 
+theme.prompt_fg_cursor =  "#4FAAD6"
+
 theme.menu_height    = 40
 theme.menu_width     = 320
 theme.menu_icon_size = 32
@@ -638,7 +640,10 @@ function theme.at_screen_connect(s)
    s.mypromptbox = awful.widget.prompt{
       prompt = " Run: ",
       bg = theme.bg_focus}
-   s.mypromptboxcontainer = wibox.container.margin(s.mypromptbox, 0, 0, 5, 5)
+   s.mypromptboxcontainer = wibox.container.margin(
+      wibox.container.background(
+         s.mypromptbox, theme.bg_focus, widgetBackgroundShape),
+      0, 0, 5, 5)
 
    -- Create an imagebox widget which will contains an icon indicating which layout we're using.
    -- We need one layoutbox per screen.
