@@ -182,7 +182,7 @@ M.updateFilelist = function(doRefresh)
 end -- end of M.updateFilelist
 
 M.setAllWallpapers = function()
-   local f = io.open( os.getenv("HOME") .. "/log/awesome_wallpaper.log", 'a')
+   local f = io.open( "/tmp/awesome_wallpaper.log", 'a')
    f:write(os.date("[%Y-%m-%d %H:%M:%S]") .. "\n")
    for s in screen do
       M.setWallpaper(s, f)
