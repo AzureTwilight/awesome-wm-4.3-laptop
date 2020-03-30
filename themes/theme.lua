@@ -178,6 +178,8 @@ for k, v in pairs(sortTable) do
    theme.myScreenIdxReverse[idxTable[v]] = k
 end
 
+local hostname = helpers.first_line('/etc/hostname'):gsub('\n', '')
+
 -- Create Jump Menu
 theme.app_menu = function(appClass, newCmd)
    local items = {}
@@ -234,37 +236,39 @@ local red   = "#B22222"
 
 -- VPN Indicator
 
--- local vpnOffMarkup = space2 .. markup.font(theme.font, "VPN: ")
---    .. markup.font(theme.monofont, markup(red, "OFF")) .. space2
--- local vpntext = wibox.widget.textbox(vpnOffMarkup)
--- local vpntextwidget = wibox.container.background(
---    vpntext, theme.bg_focus, widgetBackgroundShape)
--- vpntextwidget = wibox.container.margin(vpntextwidget, 0, 0, 5, 5)
+if hostname ~= "ThinkPad" then
+    local vpnOffMarkup = space2 .. markup.font(theme.font, "VPN: ")
+    .. markup.font(theme.monofont, markup(red, "OFF")) .. space2
+    local vpntext = wibox.widget.textbox(vpnOffMarkup)
+    local vpntextwidget = wibox.container.background(
+    vpntext, theme.bg_focus, widgetBackgroundShape)
+    vpntextwidget = wibox.container.margin(vpntextwidget, 0, 0, 5, 5)
 
--- theme.vpnUpdate = function()
---    awful.spawn.easy_async_with_shell(
---       "/usr/bin/purevpn -s",
---       function(out)
---          local conn = out:match("Not connected")
---          if conn == nil then -- connected
---             awful.spawn.easy_async_with_shell(
---                "/usr/bin/purevpn -i",
---                function(out)
---                   local city = out:match("City:[ ]*([^\n]*)") or ""
---                   local country = out:match("Country:[^%(]*%(([^%)]*)%)") or ""
---                   local text = markup.font(theme.font,
---                                            "VPN: " .. markup(green, "ON")
---                                               .. " (" .. city .. ", " .. country
---                                               .. ")")
---                   vpntext:set_markup(text)
---             end)
---          else
---             vpntext:set_markup(vpnOffMarkup)
---          end
---    end)
--- end
--- vpntextwidget:connect_signal(
---    "mouse::enter", function() theme.vpnUpdate() end)
+    theme.vpnUpdate = function()
+    awful.spawn.easy_async_with_shell(
+        "/usr/bin/purevpn -s",
+        function(out)
+            local conn = out:match("Not connected")
+            if conn == nil then -- connected
+                awful.spawn.easy_async_with_shell(
+                "/usr/bin/purevpn -i",
+                function(out)
+                    local city = out:match("City:[ ]*([^\n]*)") or ""
+                    local country = out:match("Country:[^%(]*%(([^%)]*)%)") or ""
+                    local text = markup.font(theme.font,
+                                            "VPN: " .. markup(green, "ON")
+                                                .. " (" .. city .. ", " .. country
+                                                .. ")")
+                    vpntext:set_markup(text)
+                end)
+            else
+                vpntext:set_markup(vpnOffMarkup)
+            end
+    end)
+    end
+    vpntextwidget:connect_signal(
+    "mouse::enter", function() theme.vpnUpdate() end)
+end
 
 -- Clock
 local mytextclock = wibox.widget.textclock(
@@ -313,150 +317,165 @@ mytextcalendar:disconnect_signal("mouse::enter", mycal.hover_on)
 -- MPD
 -- local mpd_icon = wibox.widget.imagebox(theme.mpdl)
 
--- Battery
-local bat = lain.widget.bat({
-      timeout = 15,
-      ac = "AC",
-      settings = function()
-         if bat_now.ac_status == 0 then
-            bat_header = " Bat "
-            header_color = "#F5C400"
-         else
-            bat_header = " AC "
-            header_color = "#4E9D2D"
-         end
+local batwidget
+local mybrightnesswidget 
+local brightness_text
 
-         if bat_now.status == "Full" then
-            bat_foot = "(Full) "
-         elseif bat_now.status == "Charging" then
-            bat_foot = "(Charging: " .. bat_now.time .. ") " 
-         elseif bat_now.status == "Discharging" then
-            bat_foot = "(Discharging: " .. bat_now.time .. ") " 
-         else
-            bat_foot = "(N/A) "
-         end
-         
-         bat_p      = bat_now.perc .. "% " .. bat_foot
-         widget:set_markup(
-            markup.font(theme.font,
-                        markup(header_color, bat_header) .. bat_p))
-      end
-})
-local batbg = wibox.container.background(bat.widget, theme.bg_focus, widgetBackgroundShape)
-local batwidget = wibox.container.margin(batbg, 0, 0, 5, 5)
-batwidget:connect_signal("mouse::enter", function() end)
+if hostname == 'ThinkPad' then
 
--- Brightness
-local GET_BRIGHTNESS_CMD = "light -G"   -- "xbacklight -get"
-theme.INC_BRIGHTNESS_CMD = "light -A 5" -- "xbacklight -inc 5"
-theme.DEC_BRIGHTNESS_CMD = "light -U 5" -- "xbacklight -dec 5"
+   -- Battery
+    local bat = lain.widget.bat({
+        timeout = 15,
+        ac = "AC",
+        settings = function()
+            if bat_now.ac_status == 0 then
+                bat_header = " Bat "
+                header_color = "#F5C400"
+            else
+                bat_header = " AC "
+                header_color = "#4E9D2D"
+            end
 
-local brightness_icon = wibox.widget.imagebox(theme.brightness)
-local brightness_text = wibox.widget.textbox()
-local brightness_widget = wibox.widget {
-    brightness_icon,
-    brightness_text,
-    layout = wibox.layout.fixed.horizontal,
-}
+            if bat_now.status == "Full" then
+                bat_foot = "(Full) "
+            elseif bat_now.status == "Charging" then
+                bat_foot = "(Charging: " .. bat_now.time .. ") " 
+            elseif bat_now.status == "Discharging" then
+                bat_foot = "(Discharging: " .. bat_now.time .. ") " 
+            else
+                bat_foot = "(N/A) "
+            end
 
-local brightness_bg = wibox.container.background(
-   brightness_widget, theme.bg_focus, widgetBackgroundShape)
-local mybrightnesswidget = wibox.container.margin(brightness_bg, 0, 0, 5, 5)
+            bat_p      = bat_now.perc .. "% " .. bat_foot
+            widget:set_markup(
+               space2 ..
+                  markup.font(theme.font,
+                              markup(header_color, bat_header)
+                                 .. bat_p)
+                  .. space2)
+        end
+    })
+    local batbg = wibox.container.background(bat.widget, theme.bg_focus, widgetBackgroundShape)
+    batwidget = wibox.container.margin(batbg, 0, 0, 5, 5)
+    batwidget:connect_signal("mouse::enter", function() end)
 
-function theme.update_brightness_widget()
-   awful.spawn.easy_async_with_shell(
-      GET_BRIGHTNESS_CMD,
-      function(stdout)
-         local brightness_level = tonumber(string.format("%.0f", stdout))
-         brightness_text:set_markup(
-            space2 ..
-               markup.font(
-                  theme.monofont,
-                  "BRT " .. brightness_level .. "% ") .. space2)
-   end)
+    -- Brightness
+    local GET_BRIGHTNESS_CMD = "light -G"   -- "xbacklight -get"
+    theme.INC_BRIGHTNESS_CMD = "light -A 5" -- "xbacklight -inc 5"
+    theme.DEC_BRIGHTNESS_CMD = "light -U 5" -- "xbacklight -dec 5"
+
+    local brightness_icon = wibox.widget.imagebox(theme.brightness)
+    local brightness_text = wibox.widget.textbox()
+    local brightness_widget = wibox.widget {
+       space2Widget,
+       brightness_icon,
+       brightness_text,
+       layout = wibox.layout.fixed.horizontal,
+    }
+
+    local brightness_bg = wibox.container.background(
+    brightness_widget, theme.bg_focus, widgetBackgroundShape)
+    mybrightnesswidget = wibox.container.margin(brightness_bg, 0, 0, 5, 5)
+
+    function theme.update_brightness_widget()
+    awful.spawn.easy_async_with_shell(
+        GET_BRIGHTNESS_CMD,
+        function(stdout)
+            local brightness_level = tonumber(string.format("%.0f", stdout))
+            brightness_text:set_markup(
+                space2 ..
+                markup.font(
+                    theme.monofont,
+                    "BRT " .. brightness_level .. "%") .. space2)
+    end)
+    end
+
+    theme.update_brightness_widget()
+
+    brightness_text:connect_signal(
+    "button::press",
+    function(_,_,_,button)
+        if button == 4 then
+            awful.spawn(theme.INC_BRIGHTNESS_CMD, false)
+            theme.update_brightness_widget()
+        elseif button == 5 then
+            awful.spawn(theme.DEC_BRIGHTNESS_CMD, false)
+            theme.update_brightness_widget()
+        end
+    end)
 end
-
-brightness_text:connect_signal(
-   "button::press",
-   function(_,_,_,button)
-      if button == 4 then
-         awful.spawn(theme.INC_BRIGHTNESS_CMD, false)
-         theme.update_brightness_widget()
-      elseif button == 5 then
-         awful.spawn(theme.DEC_BRIGHTNESS_CMD, false)
-         theme.update_brightness_widget()
-      end
-end)
 
 -- ALSA volume bar
-local volumeCmd = "amixer"
-local volumeChannel = "PCM"
-theme.volume = lain.widget.alsabar({
-	  notification_preset = { font = theme.monofont, fg = "#FF00FF"},
-	  --togglechannel = "IEC958,3",
-      cmd = volumeCmd,
-	  channel = volumeChannel,
-	  width = 80, height = 10, border_width = 0,
-	  colors = {
-		 background = "#404040",
-		 unmute     = carolinaBlueWeb,
-		 mute       = "#FF9F9F"
-	  },
-})
-theme.volume.bar.paddings = 0
-theme.volume.bar.margins = 5
-theme.volume.bar:buttons(
-   awful.util.table.join(
-    awful.button({}, 3, function() -- right click
-          awful.spawn.with_shell(
-             string.format(
-                "%s set %s toggle",
-                theme.volume.cmd,
-                theme.volume.togglechannel or theme.volume.channel))
-        theme.volume.update()
-    end),
-    awful.button({}, 4, function() -- scroll up
-          awful.spawn.with_shell(
-             string.format(
-                "%s set %s 1%%+", theme.volume.cmd, theme.volume.channel))
-        theme.volume.update()
-    end),
-    awful.button({}, 5, function() -- scroll down
-          awful.spawn.with_shell(
-             string.format(
-                "%s set %s 1%%-", theme.volume.cmd, theme.volume.channel))
-        theme.volume.update()
-    end)
-))
+-- local volumeCmd = "amixer"
+-- local volumeChannel = "PCM"
+-- theme.volume = lain.widget.alsabar({
+-- 	  notification_preset = { font = theme.monofont, fg = "#FF00FF"},
+-- 	  --togglechannel = "IEC958,3",
+--       cmd = volumeCmd,
+-- 	  channel = volumeChannel,
+-- 	  width = 80, height = 10, border_width = 0,
+-- 	  colors = {
+-- 		 background = "#404040",
+-- 		 unmute     = carolinaBlueWeb,
+-- 		 mute       = "#FF9F9F"
+-- 	  },
+-- })
+-- theme.volume.bar.paddings = 0
+-- theme.volume.bar.margins = 5
+-- theme.volume.bar:buttons(
+--    awful.util.table.join(
+--     awful.button({}, 3, function() -- right click
+--           awful.spawn.with_shell(
+--              string.format(
+--                 "%s set %s toggle",
+--                 theme.volume.cmd,
+--                 theme.volume.togglechannel or theme.volume.channel))
+--         theme.volume.update()
+--     end),
+--     awful.button({}, 4, function() -- scroll up
+--           awful.spawn.with_shell(
+--              string.format(
+--                 "%s set %s 1%%+", theme.volume.cmd, theme.volume.channel))
+--         theme.volume.update()
+--     end),
+--     awful.button({}, 5, function() -- scroll down
+--           awful.spawn.with_shell(
+--              string.format(
+--                 "%s set %s 1%%-", theme.volume.cmd, theme.volume.channel))
+--         theme.volume.update()
+--     end)
+-- ))
 
-local volumewidget = wibox.container.background(
-   theme.volume.bar, theme.bg_focus, widgetBackgroundShape)
-volumewidget = wibox.container.margin(volumewidget, 0, 0, 5, 5)
+-- local volumewidget = wibox.container.background(
+--    theme.volume.bar, theme.bg_focus, widgetBackgroundShape)
+-- volumewidget = wibox.container.margin(volumewidget, 0, 0, 5, 5)
 
 -- GPU
-local gputext = wibox.widget.textbox()
-local gpuUpdate = function()
-   local checkCmd = "gpustat --no-header | awk -F '|' '{print $2 $3}'"
-   -- local checkCmd = 'gpustat --no-header'
-   awful.spawn.easy_async_with_shell(
-      checkCmd,
-      function(out)
-         gputext:set_markup(
-            markup("#FFFFFF",
-                   space2 
-                      .. markup.font(theme.monofont, 'GPU:' .. out)))
-   end)
-end
+if hostname == "yaqi-MS-7978" then
+    local gputext = wibox.widget.textbox()
+    local gpuUpdate = function()
+    local checkCmd = "gpustat --no-header | awk -F '|' '{print $2 $3}'"
+    -- local checkCmd = 'gpustat --no-header'
+    awful.spawn.easy_async_with_shell(
+        checkCmd,
+        function(out)
+            gputext:set_markup(
+                markup("#FFFFFF",
+                    space2 
+                        .. markup.font(theme.monofont, 'GPU:' .. out)))
+    end)
+    end
 
-local gpuwidget = wibox.container.margin(
-   wibox.container.background(gputext, theme.bg_focus, widgetBackgroundShape),
-   0, 0, 5, 5)
-local gpuTimer = gears.timer {
-   timeout = 2,
-   call_now = true,
-   autostart = false,
-   callback = gpuUpdate}
-gpuTimer:start()
+    local gpuwidget = wibox.container.margin(
+    wibox.container.background(gputext, theme.bg_focus, widgetBackgroundShape),
+    0, 0, 5, 5)
+    local gpuTimer = gears.timer {
+    timeout = 2,
+    call_now = true,
+    autostart = false,
+    callback = gpuUpdate}
+    gpuTimer:start()
+end
 
 -- CPU
 local cpu_icon = wibox.widget.imagebox(theme.cpu)
