@@ -15,16 +15,15 @@ local M = {}
 
 M.init = function()
    M.filelist = {}
-   M.lastFocusedClient = nil
-   M.lastFocusedScreen = nil
    M.showDesktopStatus = false
+   M.lastFocusedScreenIndex = 1
+   M.lastFocusedClient = nil
    M.wallpaperMode = "max"
    M.filelistCMD = nil
    M.quiteMode = false
    M.icon = beautiful.refreshed
-   -- M.datebaseUpdateLastTime = os.time()
-   -- M.UPDATE_DATABASE_INTERVAL = 43200 -- 12h
    M.currentIdx = nil
+   M.shuffleMode = false
    math.randomseed(os.time())
    
    local toggleMenu = {}
@@ -149,48 +148,37 @@ M.updateFilelist = function(doRefresh)
       cmd = M.filelistCMD
    else
       cmd =  "find -L " .. M.wallpaperPath
-         .. ' -iname "*.png" -or -iname "*.jpg" -or -iname "*.jpeg"'
+         .. ' -iname "*.png" -or -iname "*.jpg" -or -iname "*.jpeg" > /tmp/wall-list'
    end
-   awful.spawn.easy_async(
+   awful.spawn.easy_async_with_shell(
       cmd,
       function (out)
          naughty.notify(
             { title = "Updating wallpaper database",
               text  = "Folder: " .. M.wallpaperPath,
               icon  = M.icon, icon_size = 64,})
-         
-         
-         if M.filelistCMD ~= nil then
-            for s in out:gmatch("[^\r\n]+") do
-               M.filelist[#M.filelist+1] = M.wallpaperPath .. s
-            end
-         else -- the find return absolute path
-            for s in out:gmatch("[^\r\n]+") do
-                if not string.match(s, "ignore") then
-                   M.filelist[#M.filelist+1] = s
-                end
+
+         fh = io.open('/tmp/wall-list', 'r')
+         line = fh:read()
+         if line ~= nil then
+            M.filelist[#M.filelist+1] = line
+            while true do
+                line = fh:read()
+                if line == nil then break end
+                M.filelist[#M.filelist+1] = line
             end
          end
-
-         naughty.notify({ title = "Shuffling Wallpapers...",
-                          text  = "Found: " .. #M.filelist .. " items",
-                          icon  = M.icon, icon_size = 64})
-
-         -- Fisher-Yates shuffle
-         local j
-         for i = #M.filelist, 2, -1 do
-            j = math.random(i)
-            M.filelist[i], M.filelist[j] = M.filelist[j], M.filelist[i]
-         end
+         fh:close()
          
          naughty.notify({ title = "Wallpaper database updated!",
                           text  = "Found: " .. #M.filelist .. " items",
-                          icon  = M.icon, icon_size = 64})
+                          icon  = M.icon, icon_size = 64,})
          
          if doRefresh then
             M.setAllWallpapers()
          end
    end)
+   
 end -- end of M.updateFilelist
 
 M.setAllWallpapers = function()
@@ -243,6 +231,7 @@ M.toggleMode = function(idx)
    M.wallpaperPath = beautiful.wallpaper[idx].path
    M.wallpaperMode = beautiful.wallpaper[idx].mode
    M.quiteMode     = beautiful.wallpaper[idx].quite or false
+   M.shuffleMode   = beautiful.wallpaper[idx].shuffle or false
    M.filelistCMD   = beautiful.wallpaper[idx].cmd or nil
    local interval  = beautiful.wallpaper[idx].interval or nil
 
@@ -276,8 +265,8 @@ M.toggleShowDesktop = function()
    M.showDesktopStatus = not M.showDesktopStatus
 
    if M.showDesktopStatus then
-      M.lastFocusedClient = client.focus
-      M.lastFocusedScreen = awful.screen.focused()
+      -- M.lastFocusedScreenIndex = awful.screen.focused().index
+      -- M.lastFocusedClient = client.focus
       for s in screen do
          local wExist = false
          for _, t in ipairs(s.tags) do
@@ -291,25 +280,26 @@ M.toggleShowDesktop = function()
             awful.tag.add("W", {screen = s}):view_only()
          end
       end
+      
    else  -- not showing desktop
       for s in screen do
          for _, t in ipairs(s.tags) do
             if t.name == "W" then
-               t:view_only()
-               for _, c in ipairs(s.clients) do
-                  c:move_to_tag(s.tags[1])
-               end
+               -- for _, c in ipairs(t:clients()) do
+               --    c:move_to_tag(s.tags[1])
+               -- end
                t:delete()
             end
          end -- tag in s.tags
       end -- s in screen
-      -- Refocus the last focused screen
-      awful.screen.focus(M.lastFocusedScreen)
-      if M.lastFocusedScreen ~= nil then
-         client.focus = M.lastFocusedClient
-         M.lastFocusedClient:raise()
-      end
-   end
+
+      -- awful.screen.focus(M.lastFocusedScreenIndex)
+      -- client.focus = M.lastFocusedClient
+      -- if M.lastFocusedClient ~= nil then
+      --    M.lastFocusedClient:raise()
+      -- end
+
+    end
 
 end -- M.toggleShowDesktop
 

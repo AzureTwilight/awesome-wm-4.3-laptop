@@ -71,6 +71,7 @@ awful.util.terminal = terminal
 awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
 awful.layout.layouts = {
     awful.layout.suit.tile,
+    awful.layout.suit.tile.top,
     lain.layout.termfair,
     lain.layout.termfair.center,
     lain.layout.centerwork,
@@ -78,7 +79,6 @@ awful.layout.layouts = {
     lain.layout.cascade,
     -- awful.layout.suit.magnifier,
     -- awful.layout.suit.fair,
-    -- awful.layout.suit.tile.top,
     --awful.layout.suit.tile.left,
     --awful.layout.suit.tile.bottom,
     --awful.layout.suit.fair.horizontal,
@@ -157,18 +157,10 @@ lain.layout.cascade.tile.nmaster       = 5
 lain.layout.cascade.tile.ncol          = 2
 
 local theme_path = string.format(
-   "%s/.config/awesome/themes/holo/theme.lua", os.getenv("HOME"))
+   "%s/.config/awesome/themes/theme.lua", os.getenv("HOME"))
 beautiful.init(theme_path)
 
 -- }}}
-
--- {{{ Screen
--- Create a wibox for each screen and add it
-awful.screen.connect_for_each_screen(
-   function(s) beautiful.at_screen_connect(s) end)
-
--- Update widget
-beautiful.vpnUpdate()
 
 -- Setup Wallpaper Accordingly
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
@@ -178,6 +170,15 @@ screen.connect_signal("property::geometry", function(s)
        wallpaper.refresh()
     end
 end)
+
+-- {{{ Screen
+-- Create a wibox for each screen and add it
+awful.screen.connect_for_each_screen(
+   function(s) beautiful.at_screen_connect(s) end)
+
+-- Update widget
+beautiful.vpnUpdate()
+
 
 -- {{{ Menu
 local function report_monitor(s)
@@ -739,6 +740,17 @@ for i = 1, 9 do
              end
           end,
           descr_move),
+       -- another set to move to tag, just for convenience
+       awful.key({ modkey, altkey }, "#" .. i + 9,
+          function ()
+             if client.focus then
+                local tag = client.focus.screen.tags[i]
+                if tag then
+                   client.focus:move_to_tag(tag)
+                end
+             end
+          end,
+          descr_move),
        -- Toggle tag on focused client.
        awful.key({ modkey, "Control", "Shift" }, "#" .. i + 9,
           function ()
@@ -764,14 +776,14 @@ for i = 1, screen:count() do
       -- View tag only.
       awful.key({ hyperkey }, "#" .. i + 9,
          function ()
-            awful.screen.focus(i)
+            awful.screen.focus(beautiful.myScreenIdx[i])
             updateFocusWidget()
          end,
          descr_view),
       -- Toggle tag display.
       awful.key({ hyperkey, altkey }, "#" .. i + 9,
          function ()
-            client.focus:move_to_screen(i)
+            client.focus:move_to_screen(beautiful.myScreenIdx[i])
          end,
          descr_move)
    )
@@ -840,19 +852,18 @@ awful.rules.rules = {
     { rule_any = { class = {"Emacs", "Gnome-terminal"} },
       properties = { opacity = 0.90 }},
 
-    { rule = { class = "Google-chrome" },
+    { rule_any = { class = {"Google-chrome", "Nautilus"} },
       properties = { opacity = 0.95 }},
 
-    { rule = { class = "Nautilus" },
-      properties = { opacity = 0.95,
-                     titlebars_enabled = false,
-                     requests_no_titlebar = true}},
+    { rule_any = { class = {"Eog", "Nautilus"} },
+      properties = {titlebars_enabled = false,
+                    requests_no_titlebar = true}},
 
 	-- Set floating clients
     { rule_any = { class = {"feh", "Mathematica", "mpv", "vlc",
                             "libprs500", "Nautilus", "Envince",
-                            "onscripter", "Xsane", "matplotlib",
-                            "Eog", "Matplotlib", "org.jabref.JabRefMain" } },
+                            "onscripter", "matplotlib",
+                            "Eog", "Matplotlib", } },
       properties = { floating = true } },
 
 	-- Set ontop clients
@@ -957,16 +968,16 @@ client.connect_signal(
 end)
 
 -- Enable Auto Title bar when toggle floatinG
-client.connect_signal(
-   "property::floating", function (c)
-      if c.class ~= 'Nautilus' then
-        if c.floating and not c.maximized then
-            awful.titlebar.show(c)
-        else
-            awful.titlebar.hide(c)
-        end
-      end
-end)
+-- client.connect_signal(
+--    "property::floating", function (c)
+--       if c.class ~= 'Nautilus' and c.class ~= 'Eog' then
+--         if c.floating and not c.maximized then
+--             awful.titlebar.show(c)
+--         else
+--             awful.titlebar.hide(c)
+--         end
+--       end
+-- end)
 
 -- No border for maximized clients
 client.connect_signal(

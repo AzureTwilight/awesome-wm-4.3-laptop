@@ -8,20 +8,20 @@
    
 --]]
 
-local screen = screen
-local gears  = require("gears")
-local lain   = require("lain")
-local awful  = require("awful")
-local wibox  = require("wibox")
-local naughty= require("naughty")
-local helpers  = require("lain.helpers")
-local string = string
-local os     = os
+local screen  = screen
+local gears   = require("gears")
+local lain    = require("lain")
+local awful   = require("awful")
+local wibox   = require("wibox")
+local naughty = require("naughty")
+local helpers = require("lain.helpers")
+local string  = string
+local os      = os
 
 local theme                                     = {}
 
 theme.default_dir = require("awful.util").get_themes_dir() .. "default"
-theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/holo/icons"
+theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/icons"
 -- theme.wallpaper   = os.getenv("HOME") .. "/Pictures/wallpaper/"
 -- theme.wallpaper_alter = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
 
@@ -35,44 +35,51 @@ theme.wallpaper = {
    {name="HCG-R18",
     path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
     mode="fit", quite=true, interval=30,
-    cmd="sqlite3 " .. os.getenv("HOME")
-       .. "/Pictures/database.db 'select FilePath from MAIN_TBL where WALLPAPER=0;'"}
+    cmd= os.getenv("HOME") .. "/Pictures/shuffle-filelist"}
 }
 
 theme.font     = "Roboto Bold 10"
-theme.monofont = "Roboto Mono for Powerline Bold 10"
+theme.monofont = "Roboto Mono Bold 10"
 
 local carolinaBlueWeb     = "#4B9CD3"
-local carolinaDarkBlueWeb = "#006DB6"
+local transparency = "E6"
+local transparency2 = "F6"
+-- local widgetBackgroundShape = gears.shape.rectangle
+local widgetBackgroundShape = gears.shape.rounded_bar
 
 theme.fg_normal = "#FFFFFF"
-theme.bg_normal = "#242424"
-theme.fg_focus  = "#0099CC"
-theme.bg_focus  = "#303030"
+theme.bg_normal = "#242424" .. transparency
+-- theme.fg_focus  = "#0099CC"
+theme.fg_focus  = "#FFFFFF"
+theme.bg_focus_bare = "#404040" 
+theme.bg_focus  = theme.bg_focus_bare.. transparency2
 theme.fg_urgent = "#D87900"
-theme.bg_urgent = "#303030"
+theme.bg_urgent = "#303030" .. transparency2
 
 theme.border_width  = 2
 theme.border_normal = "#707C7C"
-theme.border_focus  = carolinaBlueWeb
+theme.border_focus  = "#4FAAD6"
 
-theme.taglist_fg_focus = carolinaBlueWeb
+theme.taglist_fg_focus = "#4FAAD6"
+theme.taglist_bg_focus = theme.bg_focus
 theme.taglist_fg_empty = "#505050"
-theme.taglist_font     = "Roboto Condensed Regular 10"
+theme.taglist_font     = "Roboto Mono Light 10"
 
-theme.tasklist_fg_focus     = carolinaBlueWeb
-theme.tasklist_bg_focus     = "#505050" -- brighter
-theme.tasklist_border_color = "#505050"
+theme.tasklist_fg_focus     = "#4FAAD6"
+theme.tasklist_bg_focus     = "#505050" .. "CC" -- brighter
+-- theme.tasklist_border_color = "#505050"
+theme.tasklist_border_width = 0
+theme.tasklist_border_color = nil
 theme.tasklist_fg_minimize  = "#777777"
 theme.tasklist_floating     = "[F]"
 theme.tasklist_maximized    = "[M]"
 theme.tasklist_ontop        = "[T]"
-theme.tasklist_font         = "Roboto Mono for Powerline 8"
-theme.tasklist_font_focus   = "Roboto Mono for Powerline Bold 8"
+theme.tasklist_font         = "Roboto Mono 10"
+theme.tasklist_font_focus   = "Roboto Mono Bold 10"
 theme.tasklist_disable_icon = true
 
 theme.systray_icon_spacing = 4
-theme.bg_systray = theme.bg_focus
+theme.bg_systray = theme.bg_focus_bare
 
 theme.notification_icon_size = 64
 theme.notification_opacity   = 0.9
@@ -83,22 +90,22 @@ theme.menu_icon_size = 32
 
 theme.awesome_icon          = theme.icon_dir .. "/awesome_icon_white.png"
 theme.awesome_icon_launcher = theme.icon_dir .. "/awesome_icon.png"
-theme.spr_small             = theme.icon_dir .. "/spr_small.png"
-theme.spr_very_small        = theme.icon_dir .. "/spr_very_small.png"
-theme.spr_right             = theme.icon_dir .. "/spr_right.png"
-theme.spr_bottom_right      = theme.icon_dir .. "/spr_bottom_right.png"
-theme.spr_left              = theme.icon_dir .. "/spr_left.png"
-theme.bar                   = theme.icon_dir .. "/bar.png"
-theme.bottom_bar            = theme.icon_dir .. "/bottom_bar.png"
-theme.mpdl                  = theme.icon_dir .. "/mpd.png"
-theme.mpd_on                = theme.icon_dir .. "/mpd_on.png"
-theme.prev                  = theme.icon_dir .. "/prev.png"
-theme.nex                   = theme.icon_dir .. "/next.png"
-theme.stop                  = theme.icon_dir .. "/stop.png"
-theme.pause                 = theme.icon_dir .. "/pause.png"
-theme.play                  = theme.icon_dir .. "/play.png"
-theme.clock                 = theme.icon_dir .. "/clock.png"
-theme.calendar              = theme.icon_dir .. "/cal.png"
+-- theme.spr_small             = theme.icon_dir .. "/spr_small.png"
+-- theme.spr_very_small        = theme.icon_dir .. "/spr_very_small.png"
+-- theme.spr_right             = theme.icon_dir .. "/spr_right.png"
+-- theme.spr_bottom_right      = theme.icon_dir .. "/spr_bottom_right.png"
+-- theme.spr_left              = theme.icon_dir .. "/spr_left.png"
+-- theme.bar                   = theme.icon_dir .. "/bar.png"
+-- theme.bottom_bar            = theme.icon_dir .. "/bottom_bar.png"
+-- theme.mpdl                  = theme.icon_dir .. "/mpd.png"
+-- theme.mpd_on                = theme.icon_dir .. "/mpd_on.png"
+-- theme.prev                  = theme.icon_dir .. "/prev.png"
+-- theme.nex                   = theme.icon_dir .. "/next.png"
+-- theme.stop                  = theme.icon_dir .. "/stop.png"
+-- theme.pause                 = theme.icon_dir .. "/pause.png"
+-- theme.play                  = theme.icon_dir .. "/play.png"
+theme.clock                 = theme.icon_dir .. "/myclock.png"
+theme.calendar              = theme.icon_dir .. "/mycal.png"
 theme.cpu                   = theme.icon_dir .. "/cpu.png"
 theme.net_up                = theme.icon_dir .. "/net_up.png"
 theme.net_down              = theme.icon_dir .. "/net_down.png"
@@ -115,6 +122,7 @@ theme.net_down              = theme.icon_dir .. "/net_down.png"
 -- theme.layout_magnifier      = theme.icon_dir .. "/magnifier.png"
 -- theme.layout_floating       = theme.icon_dir .. "/floating.png"
 theme.layout_tile           = theme.icon_dir .. "/mytile.png"
+theme.layout_tiletop        = theme.icon_dir .. "/mytiletop.png"
 theme.layout_floating       = theme.icon_dir .. "/myfloating.png"
 
 theme.refreshed             = theme.icon_dir .. "/refreshed.png"
@@ -144,23 +152,29 @@ theme.titlebar_maximized_button_focus_inactive  = theme.default_dir.."/titlebar/
 theme.titlebar_maximized_button_normal_active   = theme.default_dir.."/titlebar/maximized_normal_active.png"
 theme.titlebar_maximized_button_focus_active    = theme.default_dir.."/titlebar/maximized_focus_active.png"
 
-theme.titlebar_bg_normal = theme.bg_normal .. "E6"
-
--- theme.musicplr = string.format("%s -e ncmpcpp", awful.util.terminal)
-
--- theme.lain_icons         = os.getenv("HOME") .. "/.config/awesome/lain/icons/layout/default"
--- theme.layout_termfair    = theme.lain_icons .. "/termfairw.png"
--- theme.layout_centerfair  = theme.lain_icons .. "/centerfairw.png"  -- termfair.center
--- theme.layout_cascade     = theme.lain_icons .. "/cascadew.png"
--- theme.layout_cascadetile = theme.lain_icons .. "/cascadetilew.png" -- cascade.tile
--- -- theme.layout_centerwork  = theme.lain_icons .. "/centerworkw.png"
--- -- theme.layout_centerwork  = theme.icon_dir .. "/mycenterwork.png"
--- theme.layout_centerworkh = theme.lain_icons .. "/centerworkhw.png" -- centerwork.horizontal
+theme.titlebar_bg_normal = theme.bg_normal .. transparency
 
 theme.layout_termfair    = theme.icon_dir .. "/mytermfair.png"
 theme.layout_centerfair  = theme.icon_dir .. "/mycenterfair.png"  -- termfair.center
 theme.layout_cascade     = theme.icon_dir .. "/mycascade.png"
 theme.layout_centerwork  = theme.icon_dir .. "/mycenterwork.png"
+
+-- screen index translation
+-- translate the physical index to build in index
+theme.myScreenIdx = {}
+-- translate built-in index to physical index
+theme.myScreenIdxReverse = {}
+local idxTable = {}
+local sortTable = {}
+for s in screen do
+   sortTable[#sortTable+1] = s.geometry.x
+   idxTable[s.geometry.x] = s.index
+end
+table.sort(sortTable)
+for k, v in pairs(sortTable) do
+   theme.myScreenIdx[k] = idxTable[v]
+   theme.myScreenIdxReverse[idxTable[v]] = k
+end
 
 -- Create Jump Menu
 theme.app_menu = function(appClass, newCmd)
@@ -178,7 +192,7 @@ theme.app_menu = function(appClass, newCmd)
 
         header = string.format(
             "%s[S%d-%d] %s",
-            minimized, c.screen.index, c.first_tag.index, c.name)
+            minimized, theme.myScreenIdxReverse[c.screen.index], c.first_tag.index, c.name)
 
          items[#items+1] =
             {header, function()
@@ -198,16 +212,31 @@ end
 
 local markup = lain.util.markup
 local blue   = "#80CCE6"
-local space3 = markup.font("Roboto 3", " ")
+local space2 = markup.font(theme.font, "  ")
+local space3 = markup.font(theme.font, "   ")
+
+local bar = wibox.widget{
+   widget = wibox.widget.separator,
+   shape  = gears.shape.circle,
+   -- color  = theme.bg_focus,
+   visible = false,
+   color  = nil,
+   -- forced_width = 7,
+}
+local space2Widget = wibox.widget.textbox(space2)
+local space4Widget = wibox.widget.textbox(space2 .. space2)
+
+-----------------------------------------------------------------------------
 
 -- VPN Indicator
 local green = "#32CD32"
 local red   = "#B22222"
 
-local vpntext = wibox.widget.textbox(
-   markup.font(theme.font, "VPN: " .. markup(red, "OFF")))
+local vpnOffMarkup = space2 .. markup.font(theme.font, "VPN: ")
+   .. markup.font(theme.monofont, markup(red, "OFF")) .. space2
+local vpntext = wibox.widget.textbox(vpnOffMarkup)
 local vpntextwidget = wibox.container.background(
-   vpntext, theme.bg_focus, gears.shape.rectangle)
+   vpntext, theme.bg_focus, widgetBackgroundShape)
 vpntextwidget = wibox.container.margin(vpntextwidget, 0, 0, 5, 5)
 
 theme.vpnUpdate = function()
@@ -228,8 +257,7 @@ theme.vpnUpdate = function()
                   vpntext:set_markup(text)
             end)
          else
-            local text = markup.font(theme.font, "VPN: " .. markup(red, "OFF"))
-            vpntext:set_markup(text)
+            vpntext:set_markup(vpnOffMarkup)
          end
    end)
 end
@@ -238,21 +266,34 @@ vpntextwidget:connect_signal(
 
 -- Clock
 local mytextclock = wibox.widget.textclock(
-   markup("#FFFFFF", space3 .. "%H:%M   " .. markup.font("Roboto 4", " ")))
+   markup("#FFFFFF", space3 .. "%H:%M" .. space3))
 mytextclock.font = theme.font
-local clock_icon = wibox.widget.imagebox(theme.clock)
+local clock_icon = wibox.widget.imagebox(theme.clock, true)
 local clockbg = wibox.container.background(
-   mytextclock, theme.bg_focus, gears.shape.rectangle)
-local clockwidget = wibox.container.margin(clockbg, 0, 3, 5, 5)
+   wibox.widget{
+      layout=wibox.layout.fixed.horizontal,
+      space2Widget,
+      clock_icon,
+      mytextclock
+   },
+   theme.bg_focus, widgetBackgroundShape)
+local clockwidget = wibox.container.margin(clockbg, 0, 0, 5, 5)
 
 -- Calendar
 local mytextcalendar = wibox.widget.textclock(
-   markup.fontfg(theme.font, "#FFFFFF",
-                 space3 .. "%d %b " .. markup.font("Roboto 5", " ")))
+   markup.fontfg(theme.font, "#FFFFFF", space3 .. "%a %b %d" .. space3))
 local calendar_icon = wibox.widget.imagebox(theme.calendar)
 local calbg = wibox.container.background(
-   mytextcalendar, theme.bg_focus, gears.shape.rectangle)
+   wibox.widget{
+      layout=wibox.layout.fixed.horizontal,
+      space2Widget,
+      calendar_icon,
+      mytextcalendar,
+   },
+   theme.bg_focus, widgetBackgroundShape)
 local calendarwidget = wibox.container.margin(calbg, 0, 0, 5, 5)
+
+
 local mycal = lain.widget.cal({
 	  -- cal = "/usr/bin/cal -h",
       attach_to = { mytextclock, mytextcalendar },
@@ -268,7 +309,7 @@ mytextclock:disconnect_signal("mouse::enter", mycal.hover_on)
 mytextcalendar:disconnect_signal("mouse::enter", mycal.hover_on)
 
 -- MPD
-local mpd_icon = wibox.widget.imagebox(theme.mpdl)
+-- local mpd_icon = wibox.widget.imagebox(theme.mpdl)
 
 -- Battery
 -- local bat = lain.widget.bat({
@@ -299,7 +340,7 @@ local mpd_icon = wibox.widget.imagebox(theme.mpdl)
 --                         markup(header_color, bat_header) .. bat_p))
 --       end
 -- })
--- local batbg = wibox.container.background(bat.widget, theme.bg_focus, gears.shape.rectangle)
+-- local batbg = wibox.container.background(bat.widget, theme.bg_focus, widgetBackgroundShape)
 -- local batwidget = wibox.container.margin(batbg, 0, 0, 5, 5)
 -- batwidget:connect_signal("mouse::enter", function() end)
 
@@ -317,7 +358,7 @@ local mpd_icon = wibox.widget.imagebox(theme.mpdl)
 -- }
 
 -- local brightness_bg = wibox.container.background(
---    brightness_widget, theme.bg_focus, gears.shape.rectangle)
+--    brightness_widget, theme.bg_focus, widgetBackgroundShape)
 -- local mybrightnesswidget = wibox.container.margin(brightness_bg, 0, 0, 5, 5)
 
 -- function theme.update_brightness_widget()
@@ -387,7 +428,7 @@ theme.volume.bar:buttons(
 ))
 
 local volumewidget = wibox.container.background(
-   theme.volume.bar, theme.bg_focus, gears.shape.rectangle)
+   theme.volume.bar, theme.bg_focus, widgetBackgroundShape)
 volumewidget = wibox.container.margin(volumewidget, 0, 0, 5, 5)
 
 -- GPU
@@ -400,13 +441,13 @@ local gpuUpdate = function()
       function(out)
          gputext:set_markup(
             markup("#FFFFFF",
-                   space3 
-                      .. markup.font(theme.font, ' GPU:' .. out)))
+                   space2 
+                      .. markup.font(theme.monofont, 'GPU:' .. out)))
    end)
 end
 
 local gpuwidget = wibox.container.margin(
-   wibox.container.background(gputext, theme.bg_focus, gears.shape.rectangle),
+   wibox.container.background(gputext, theme.bg_focus, widgetBackgroundShape),
    0, 0, 5, 5)
 local gpuTimer = gears.timer {
    timeout = 2,
@@ -420,31 +461,33 @@ local cpu_icon = wibox.widget.imagebox(theme.cpu)
 local cpu = lain.widget.cpu({
       settings = function()
          widget:set_markup(
-            space3
+            space2
                .. markup.font(
                   theme.monofont,
-                  "CPU " .. string.format("%2d", cpu_now.usage) .. "% ")
-               .. markup.font("Roboto 5", " "))
+                  "CPU " .. string.format("%2d", cpu_now.usage) .. "%")
+               .. space2)
       end
 })
 local cpubg = wibox.container.background(
-   cpu.widget, theme.bg_focus, gears.shape.rectangle)
+   cpu.widget, theme.bg_focus, widgetBackgroundShape)
 local cpuwidget = wibox.container.margin(cpubg, 0, 0, 5, 5)
 
 -- Mem
 local mem = lain.widget.mem({
       settings = function()
          widget:set_markup(
-            space3
+            space2
                .. markup.font(
                   theme.monofont,
-                  "MEM " .. string.format("%2d", mem_now.perc) .. "% ")
-               .. markup.font("Roboto 5", " "))
+                  "MEM " .. string.format("%2d", mem_now.perc) .. "%")
+               .. space2)
       end
 })
+local memWidgetBG = wibox.container.background(
+   mem.widget, theme.bg_focus, widgetBackgroundShape)
 
 local membg = wibox.container.background(
-   mem.widget, theme.bg_focus, gears.shape.rectangle)
+   mem.widget, theme.bg_focus, widgetBackgroundShape)
 local memwidget = wibox.container.margin(membg, 0, 0, 5, 5)
 
 -- Net
@@ -466,13 +509,12 @@ local net = lain.widget.net({
          end -- of function
          
          widget:set_markup(
-            markup.font(theme.monofont,
-                        "⬇ " .. formatSpeed(net_now.received)
-                           .. " ⬆ " .. formatSpeed(net_now.sent)))
+            "  ⬇ " .. markup.font(theme.monofont, formatSpeed(net_now.received))
+               .. " - ⬆ " .. markup.font(theme.monofont, formatSpeed(net_now.sent)) .. "  ")
       end
 })
 local netbg = wibox.container.background(
-   net.widget, theme.bg_focus, gears.shape.rectangle)
+   net.widget, theme.bg_focus, widgetBackgroundShape)
 local networkwidget = wibox.container.margin(netbg, 0, 0, 5, 5)
 
 -- Weather
@@ -540,13 +582,26 @@ local myweather = lain.widget.weather({
     end
 })
 
-local weathertextbg = wibox.container.background(
-   myweather.widget, theme.bg_focus, gears.shape.rectangle)
-local weathertextwidget = wibox.container.margin(weathertextbg, 0, 0, 5, 5)
+-- local weathertextbg = wibox.container.background(
+--    myweather.widget, theme.bg_focus, widgetBackgroundShape)
+-- local weathertextwidget = wibox.container.margin(weathertextbg, 0, 0, 5, 5)
 
-local weathericonbg = wibox.container.background(
-   myweather.icon, theme.bg_focus, gears.shape.rectangle)
-local weathericonwidget = wibox.container.margin(weathericonbg, 0, 0, 5, 5)
+-- local weathericonbg = wibox.container.background(
+--    myweather.icon, theme.bg_focus, widgetBackgroundShape)
+-- local weathericonwidget = wibox.container.margin(weathericonbg, 0, 0, 5, 5)
+
+local weatherwidget = wibox.widget{
+   layout=wibox.layout.fixed.horizontal,
+   space2Widget,
+   myweather.icon,
+   myweather.widget,
+   space2Widget
+}
+
+local myWeatherWidget = wibox.container.margin(
+   wibox.container.background(
+      weatherwidget, theme.bg_focus, widgetBackgroundShape),
+   0, 0, 5, 5)
 
 -- Launcher
 -- local mylauncher = awful.widget.button({ image = theme.awesome_icon_launcher })
@@ -554,18 +609,18 @@ local weathericonwidget = wibox.container.margin(weathericonbg, 0, 0, 5, 5)
 --    "button::press", function() awful.util.mymainmenu:toggle() end)
 
 -- Separators
-local spr_small = wibox.widget.imagebox(theme.spr_small)
-local spr_very_small = wibox.widget.imagebox(theme.spr_very_small)
-local spr_right = wibox.widget.imagebox(theme.spr_right)
-local spr_bottom_right = wibox.widget.imagebox(theme.spr_bottom_right)
-local spr_left = wibox.widget.imagebox(theme.spr_left)
-local bar = wibox.widget.imagebox(theme.bar)
-local bottom_bar = wibox.widget.imagebox(theme.bottom_bar)
+-- local spr_small = wibox.widget.imagebox(theme.spr_small)
+-- local spr_very_small = wibox.widget.imagebox(theme.spr_very_small)
+-- local spr_right = wibox.widget.imagebox(theme.spr_right)
+-- local spr_bottom_right = wibox.widget.imagebox(theme.spr_bottom_right)
+-- local spr_left = wibox.widget.imagebox(theme.spr_left)
+-- local bar = wibox.widget.imagebox(theme.bar)
+-- local bottom_bar = wibox.widget.imagebox(theme.bottom_bar)
 
 function theme.at_screen_connect(s)
    
    -- Setup according to Geometry
-   local defaultLayout = {}
+   local defaultLayout
    
     if s.geometry.width / s.geometry.height > 1 then
         defaultLayout = awful.layout.suit.tile
@@ -596,16 +651,28 @@ function theme.at_screen_connect(s)
          awful.button({ }, 5, function () awful.layout.inc(-1) end)))
 
    mylayoutcont = wibox.container.background(
-      s.mylayoutbox, theme.bg_focus, gears.shape.rectangle)
+      -- s.mylayoutbox,
+      wibox.widget{
+         layout=wibox.layout.fixed.horizontal,
+         space2Widget,
+         s.mylayoutbox,
+         space2Widget
+      },
+      theme.bg_focus, widgetBackgroundShape)
    s.mylayout = wibox.container.margin(mylayoutcont, 0, 0, 5, 5)
 
    -- Create a taglist widget
-   s.mytaglist = awful.widget.taglist(
+   local mytaglist = awful.widget.taglist(
       s, awful.widget.taglist.filter.all,
       awful.util.taglist_buttons)
-   
-   mytaglistcont = wibox.container.background(
-      s.mytaglist, theme.bg_focus, gears.shape.rectangle)
+   local mytaglistcont = wibox.container.background(
+      wibox.widget{
+         layout=wibox.layout.fixed.horizontal,
+         space4Widget,
+         mytaglist,
+         space4Widget
+      },
+      theme.bg_focus, widgetBackgroundShape)
    s.mytag = wibox.container.margin(mytaglistcont, 0, 0, 5, 5)
    
    -- Create the indicator
@@ -618,7 +685,7 @@ function theme.at_screen_connect(s)
          widget        = wibox.widget.checkbox,
          --    visible       = (s == awful.screen.focused()),
       }
-      s.myfocuswidget = wibox.container.margin(s.focuswidget, 0, 0, 7, 7)
+      s.myfocuswidget = wibox.container.margin(s.focuswidget, 0, 0, 5, 5)
    else
       s.myfocuswidget = nil
    end
@@ -630,52 +697,59 @@ function theme.at_screen_connect(s)
       { bg_focus = theme.tasklist_bg_focus,
         fg_focus = theme.tasklist_fg_focus,
         shape = gears.shape.rounded_bar,
-        shape_border_width = 1,
+        shape_border_width = theme.tasklist_border_width,
         shape_border_color = theme.tasklist_border_color,
         align = "center" })
 
    -- Create the wibox
-   s.mywibox = awful.wibar({ position = "top", screen = s, height = 32})
+   s.mywibox = awful.wibar(
+      { position = "top",
+        screen = s,
+        height = 32,
+        bg     = theme.bg_normal})
    if s == screen.primary then
       s.mysystray = wibox.widget.systray()
       -- TODO: not sure if this is needed
       local mysystraybg = wibox.container.background(
-         s.mysystray, theme.bg_focus, gears.shape.rectangle)
+         wibox.widget{
+            layout=wibox.layout.fixed.horizontal,
+            space4Widget,
+            s.mysystray,
+            space4Widget
+         },
+         theme.bg_focus_bare, widgetBackgroundShape)
       local mysystraycontainer = wibox.container.margin(mysystraybg, 0, 0, 5, 5)
       
       mytoprightwibox = {
          layout = wibox.layout.fixed.horizontal,
-         spr_right, mysystraycontainer, bar,
+         spacing_widget = bar,
+         spacing = 10,
+         mysystraycontainer,
          -- VPN
-         vpntextwidget, spr_small, myvpnwidget,
-         bar,
+         vpntextwidget,
          -- Net
          networkwidget,
-         bar,
          -- bat
          -- batwidget,
-         -- bar,
-         -- cpu & mem
-         cpu_icon, cpuwidget, cpu_icon, memwidget,
-         bar,
+         -- cpu
+         cpuwidget,
+         -- mem
+         memwidget,
          -- gpu
          gpuwidget,
-         bar,
          -- Volume
-         mpd_icon, volumewidget,
-         bar,
+         -- volumewidget,
          -- weather
-         spr_small, weathericonwidget,
-         spr_small, weathertextwidget,
-         bar,
+         myWeatherWidget,
+         -- weathericonwidget,
+         -- weathertextwidget,
          -- brightness
          -- mybrightnesswidget,
-         -- bar,
          -- cal
-         calendar_icon, calendarwidget,
-         bar,
+         calendarwidget,
          -- clock
-         clock_icon, clockwidget,
+         clockwidget,
+         space2Widget
       }
    else
       mytoprightwibox = nil
@@ -686,13 +760,14 @@ function theme.at_screen_connect(s)
       layout = wibox.layout.align.horizontal,
       { -- Left widgets
          layout = wibox.layout.fixed.horizontal,
+         spacing_widget = bar,
+         spacing = 10,
          s.myfocuswidget,
-         spr_right,
+         -- spr_right,
          s.mytag,
-         spr_small,
+         -- spr_small,
          -- s.mylayoutbox,
          s.mylayout,
-         bar,
          -- spr_small,
          s.mypromptboxcontainer,
       },
@@ -705,7 +780,8 @@ function theme.at_screen_connect(s)
       {position = "bottom",
        screen = s,
        border_width = 0,
-       height = 24})
+       height = 24,
+       bg = theme.bg_normal})
 
    -- Add widgets to the bottom wibox
    s.mybottomwibox:setup {
