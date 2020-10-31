@@ -16,10 +16,33 @@ local wibox         = require("wibox")
 local beautiful     = require("beautiful")
 local naughty       = require("naughty")
 local lain          = require("lain")
+local ruled         = require("ruled")
 --local menubar       = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup").widget
 local wallpaper = require("wallpaper")
 -- }}}
+
+-- ruled.notification.connect_signal('request::rules', function()
+--     -- Add a red background for urgent notifications.
+--     ruled.notification.append_rule {
+--         rule       = { urgency = 'critical' },
+--         properties = { timeout = 0,
+--                        bg = '#e1e3dd',
+--                        fg = '#cc3300',
+--                        opacity = 1,
+--                        position = "top_middle",
+--         }
+--     }
+
+--     -- Or green background for normal ones.
+--     ruled.notification.append_rule {
+--         rule       = { urgency = 'normal' },
+--         properties = { bg  = nil,
+--                        fg = '#ffffff',
+--                        border_color = "#ffffff",
+--                        border_width = 2}
+--     }
+-- end)
 
 -- {{{ Error handling
 if awesome.startup_errors then
@@ -59,24 +82,25 @@ run_once({ "unclutter -root -idle 10" }) -- entries must be comma-separated
 
 -- {{{ Variable definitions
 
-local modkey       = "Mod4"
-local hyperkey     = "Mod3"
-local altkey       = "Mod1"
-local terminal     = "x-terminal-emulator"
-local editor       = os.getenv("EDITOR") or "vim"
-local browser      = "google-chrome"
-local guieditor    = "emacsclient -c -n"
+local modkey         = "Mod4"
+local hyperkey       = "Mod3"
+local altkey         = "Mod1"
+local terminal       = "x-terminal-emulator"
+local newemacsclient = "emacsclient -c -n"
+local editor         = os.getenv("EDITOR") or "vim"
+local browser        = "google-chrome"
+local guieditor      = "emacsclient -c -n"
 
 awful.util.terminal = terminal
-awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
+awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }
 awful.layout.layouts = {
     awful.layout.suit.tile,
     awful.layout.suit.tile.top,
-    lain.layout.termfair,
-    lain.layout.termfair.center,
     lain.layout.centerwork,
     awful.layout.suit.floating,
-    lain.layout.cascade,
+    lain.layout.termfair,
+    lain.layout.termfair.center,
+    -- lain.layout.cascade,
     -- awful.layout.suit.magnifier,
     -- awful.layout.suit.fair,
     --awful.layout.suit.tile.left,
@@ -216,9 +240,9 @@ local myawesomemenu = {
 }
 local displaymenu = {
    { "Lock",
-     "xset dpms force off && xscreensaver-command -lock"},
+     "sleep 0.5 && xset dpms force off && command -v xscreensaver-command && xscreensaver-command -lock"},
    { "Turn off Monitor",
-     'xset dpms force off'},
+     'sleep 0.5 && xset dpms force off'},
    { "Report Monitor Props",
      function()
         for s in screen do
@@ -282,6 +306,22 @@ globalkeys = awful.util.table.join(
       { modkey,  }, "F1",
       function()    wallpaper.showWallpaperInfo(awful.screen.focused()) end,
       {description = "Show wallpaper info", group = "wallpaper"}),
+   awful.key(
+      { modkey, altkey  }, "i",
+      function()    wallpaper.ignoreCurrentWallpaper(awful.screen.focused()) end,
+      {description = "Ignore current focused wallpaper", group = "wallpaper"}),
+   awful.key(
+      { modkey, altkey, "Shift"  }, "i",
+      function()    wallpaper.ignoreCurrentWallpaper(awful.screen.focused(), true) end,
+      {description = "Accept current focused wallpaper", group = "wallpaper"}),
+   awful.key(
+      { modkey, altkey,  }, "Right",
+      function()    wallpaper.shiftWallpaperForCurrentScreen(awful.screen.focused(), 0) end,
+      {description = "Next Wallpaper for Current Screen", group = "wallpaper"}),
+   awful.key(
+      { modkey, altkey,  }, "Left",
+      function()    wallpaper.shiftWallpaperForCurrentScreen(awful.screen.focused(), -1) end,
+      {description = "Prev Wallpaper for Current Screen", group = "wallpaper"}),
 
    awful.key(
       { altkey, "Shift", "Control" }, "3",
@@ -419,6 +459,10 @@ globalkeys = awful.util.table.join(
        { modkey,           }, "Return",
        function () awful.spawn(terminal) end,
        {description = "open a terminal", group = "launcher"}),
+    awful.key(
+       { modkey,           }, "e",
+       function () awful.spawn(newemacsclient) end,
+       {description = "open emacsclient", group = "launcher"}),
     awful.key(
        { modkey, "Control" }, "r", awesome.restart,
        {description = "reload awesome", group = "awesome"}),
@@ -696,10 +740,10 @@ clientkeys = awful.util.table.join(
 -- Bind all key numbers to tags.
 -- Be careful: we use keycodes to make it works on any keyboard layout.
 -- This should map on the top row of your keyboard, usually 1 to 9.
-for i = 1, 9 do
+for i = 1, 10 do
     -- Hack to only show tags 1 and 9 in the shortcut window (mod+s)
     local descr_view, descr_toggle, descr_move, descr_toggle_focus
-    if i == 1 or i == 9 then
+    if i == 1 or i == 10 then
        descr_view = {
           description = "view tag #", group = "tag"}
        descr_toggle = {
@@ -785,7 +829,9 @@ for i = 1, screen:count() do
       -- Toggle tag display.
       awful.key({ hyperkey, altkey }, "#" .. i + 9,
          function ()
-            client.focus:move_to_screen(beautiful.myScreenIdx[i])
+            if client.focus ~= nil then
+               client.focus:move_to_screen(beautiful.myScreenIdx[i])
+            end
          end,
          descr_move)
    )
@@ -800,12 +846,7 @@ clientbuttons = awful.util.table.join(
 
 globalkeys = awful.util.table.join(
    globalkeys,
-   awful.key(
-      { altkey, "Control" }, "e",
-      function ()
-         beautiful.app_menu("Emacs", "newem")
-      end,
-      {description = "Get a jump menu of all emacs client", group = "Application"}),
+   -- Open a new client
    awful.key(
       { altkey, "Control", "Shift" }, "c",
       function ()
@@ -813,11 +854,26 @@ globalkeys = awful.util.table.join(
       end,
       {description = "Open a New Chrome Client", group = "Application"}),
    awful.key(
+      { altkey, "Control", "Shift" }, "s",
+      function ()
+         awful.spawn.with_shell("slack")
+      end,
+      {description = "Open or raise the slack client", group = "Application"}),
+
+
+   -- Run or Raise
+   awful.key(
       { altkey, "Control" }, "c",
       function ()
          beautiful.app_menu("Google-chrome", "google-chrome")
       end,
-      {description = "Run or Raise Chrome", group = "Application"})
+      {description = "Run or Raise Chrome", group = "Application"}),
+   awful.key(
+      { altkey, "Control" }, "e",
+      function ()
+         beautiful.app_menu("Emacs", "newem")
+      end,
+      {description = "Get a jump menu of all emacs client", group = "Application"})
 )
 -- Custom Screen Focus Movement
 
@@ -825,7 +881,7 @@ globalkeys = awful.util.table.join(
 root.keys(globalkeys)
 -- }}}
 
--- {{{ Rules
+-- {{{
 -- Rules to apply to new clients (through the "manage" signal).
 awful.rules.rules = {
     -- All clients will match this rule.
@@ -848,14 +904,14 @@ awful.rules.rules = {
       properties = { titlebars_enabled = true } },
 
     -- Set Firefox to always map on the first tag on screen 1.
-    { rule = { class = "Firefox" },
-      properties = { screen = 1, tag = awful.util.tagnames[1] } },
+    -- { rule = { class = "Firefox" },
+    --   properties = { screen = 1, tag = awful.util.tagnames[1] } },
 
     { rule_any = { class = {"Emacs", "Gnome-terminal"} },
-      properties = { opacity = 0.90 }},
+      properties = { opacity = 0.95 }},
 
     { rule_any = { class = {"Google-chrome", "Nautilus"} },
-      properties = { opacity = 0.95 }},
+      properties = { opacity = 0.98 }},
 
     { rule_any = { class = {"Eog", "Nautilus"} },
       properties = {titlebars_enabled = false,
@@ -865,7 +921,7 @@ awful.rules.rules = {
     { rule_any = { class = {"feh", "Mathematica", "mpv", "vlc",
                             "libprs500", "Nautilus", "Envince",
                             "onscripter", "matplotlib",
-                            "Eog", "Matplotlib", } },
+                            "Eog", "Matplotlib", "org.jabref.gui.JabRefMain"} },
       properties = { floating = true } },
 
 	-- Set ontop clients

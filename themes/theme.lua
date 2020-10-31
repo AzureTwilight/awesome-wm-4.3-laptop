@@ -26,16 +26,22 @@ theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/icons"
 -- theme.wallpaper_alter = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
 
 theme.wallpaper = {
-   {name="Normal",
+   {name="normal",
     path=os.getenv("HOME") .. "/Pictures/wallpaper/",
-    mode="max", quite=false, interval=900},
-   {name="Fuli Girls",
-    path=os.getenv("HOME") .. "/Pictures/wallpaper-alter/",
-    mode="fit", quite=true, interval=30},
+    mode="max", quite=true, interval=900},
+   {name="wallhaven",
+    path=os.getenv("HOME") .. "/Pictures/wallpaper-wallhaven/",
+    mode="fit", quite=true, interval=900},
+   {name="ftopx",
+    path=os.getenv("HOME") .. "/Pictures/wallpaper-ftopx/",
+    mode="max", quite=true, interval=90},
    {name="HCG-R18",
     path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
-    mode="fit", quite=true, interval=30,
-    cmd= os.getenv("HOME") .. "/Pictures/shuffle-filelist"}
+    mode="fit", quite=true, interval=60,
+    -- cmd= os.getenv("HOME") .. "/Pictures/shuffle-filelist"}
+    cmd= "sqlite3 " .. os.getenv("HOME") .. "/Pictures/database.db"
+       .. " 'select FilePath from MAIN_TBL where WALLPAPER=0;' | shuf > /tmp/wall-list"
+   }
 }
 
 theme.font     = "Roboto Bold 10"
@@ -54,7 +60,7 @@ theme.fg_focus  = "#FFFFFF"
 theme.bg_focus_bare = "#404040" 
 theme.bg_focus  = theme.bg_focus_bare.. transparency2
 theme.fg_urgent = "#D87900"
-theme.bg_urgent = "#303030" .. transparency2
+theme.bg_urgent = theme.bg_focus_bare.. transparency2
 
 theme.border_width  = 2
 theme.border_normal = "#707C7C"
@@ -63,7 +69,7 @@ theme.border_focus  = "#4FAAD6"
 theme.taglist_fg_focus = "#4FAAD6"
 theme.taglist_bg_focus = theme.bg_focus
 theme.taglist_fg_empty = "#505050"
-theme.taglist_font     = "Roboto Mono Light 10"
+theme.taglist_font     = "Roboto Condensed 10"
 
 theme.tasklist_fg_focus     = "#4FAAD6"
 theme.tasklist_bg_focus     = "#505050" .. "CC" -- brighter
@@ -83,6 +89,8 @@ theme.bg_systray = theme.bg_focus_bare
 
 theme.notification_icon_size = 64
 theme.notification_opacity   = 0.9
+theme.notification_shape     = gears.shape.rounded_rect
+theme.notification_font      = "Roboto Mono 14"
 
 theme.prompt_fg_cursor =  "#4FAAD6"
 
@@ -129,6 +137,8 @@ theme.layout_floating       = theme.icon_dir .. "/myfloating.png"
 
 theme.refreshed             = theme.icon_dir .. "/refreshed.png"
 theme.warning               = theme.icon_dir .. "/warning.png"
+theme.redx               = theme.icon_dir .. "/redx.png"
+theme.greencheck               = theme.icon_dir .. "/greencheck.png"
 theme.brightness            = theme.icon_dir .. "/brightness_icon.png"
 
 theme.useless_gap              = 0
@@ -235,12 +245,12 @@ local red   = "#B22222"
 -----------------------------------------------------------------------------
 
 -- VPN Indicator
-
+local vpntextwidget = nil
 if hostname ~= "ThinkPad" then
     local vpnOffMarkup = space2 .. markup.font(theme.font, "VPN: ")
     .. markup.font(theme.monofont, markup(red, "OFF")) .. space2
     local vpntext = wibox.widget.textbox(vpnOffMarkup)
-    local vpntextwidget = wibox.container.background(
+    vpntextwidget = wibox.container.background(
     vpntext, theme.bg_focus, widgetBackgroundShape)
     vpntextwidget = wibox.container.margin(vpntextwidget, 0, 0, 5, 5)
 
@@ -284,6 +294,7 @@ local clockbg = wibox.container.background(
    },
    theme.bg_focus, widgetBackgroundShape)
 local clockwidget = wibox.container.margin(clockbg, 0, 0, 5, 5)
+
 
 -- Calendar
 local mytextcalendar = wibox.widget.textclock(
@@ -406,51 +417,52 @@ if hostname == 'ThinkPad' then
 end
 
 -- ALSA volume bar
--- local volumeCmd = "amixer"
--- local volumeChannel = "PCM"
--- theme.volume = lain.widget.alsabar({
--- 	  notification_preset = { font = theme.monofont, fg = "#FF00FF"},
--- 	  --togglechannel = "IEC958,3",
---       cmd = volumeCmd,
--- 	  channel = volumeChannel,
--- 	  width = 80, height = 10, border_width = 0,
--- 	  colors = {
--- 		 background = "#404040",
--- 		 unmute     = carolinaBlueWeb,
--- 		 mute       = "#FF9F9F"
--- 	  },
--- })
--- theme.volume.bar.paddings = 0
--- theme.volume.bar.margins = 5
--- theme.volume.bar:buttons(
---    awful.util.table.join(
---     awful.button({}, 3, function() -- right click
---           awful.spawn.with_shell(
---              string.format(
---                 "%s set %s toggle",
---                 theme.volume.cmd,
---                 theme.volume.togglechannel or theme.volume.channel))
---         theme.volume.update()
---     end),
---     awful.button({}, 4, function() -- scroll up
---           awful.spawn.with_shell(
---              string.format(
---                 "%s set %s 1%%+", theme.volume.cmd, theme.volume.channel))
---         theme.volume.update()
---     end),
---     awful.button({}, 5, function() -- scroll down
---           awful.spawn.with_shell(
---              string.format(
---                 "%s set %s 1%%-", theme.volume.cmd, theme.volume.channel))
---         theme.volume.update()
---     end)
--- ))
+local volumeCmd = "amixer"
+local volumeChannel = "PCM"
+theme.volume = lain.widget.alsabar({
+	  notification_preset = { font = theme.monofont, fg = "#FF00FF"},
+	  --togglechannel = "IEC958,3",
+      cmd = volumeCmd,
+	  channel = volumeChannel,
+	  width = 80, height = 10, border_width = 0,
+	  colors = {
+		 background = "#404040",
+		 unmute     = carolinaBlueWeb,
+		 mute       = "#FF9F9F"
+	  },
+})
+theme.volume.bar.paddings = 0
+theme.volume.bar.margins = 5
+theme.volume.bar:buttons(
+   awful.util.table.join(
+    awful.button({}, 3, function() -- right click
+          awful.spawn.with_shell(
+             string.format(
+                "%s set %s toggle",
+                theme.volume.cmd,
+                theme.volume.togglechannel or theme.volume.channel))
+        theme.volume.update()
+    end),
+    awful.button({}, 4, function() -- scroll up
+          awful.spawn.with_shell(
+             string.format(
+                "%s set %s 1%%+", theme.volume.cmd, theme.volume.channel))
+        theme.volume.update()
+    end),
+    awful.button({}, 5, function() -- scroll down
+          awful.spawn.with_shell(
+             string.format(
+                "%s set %s 1%%-", theme.volume.cmd, theme.volume.channel))
+        theme.volume.update()
+    end)
+))
 
--- local volumewidget = wibox.container.background(
---    theme.volume.bar, theme.bg_focus, widgetBackgroundShape)
--- volumewidget = wibox.container.margin(volumewidget, 0, 0, 5, 5)
+local volumewidget = wibox.container.background(
+   theme.volume.bar, theme.bg_focus, widgetBackgroundShape)
+volumewidget = wibox.container.margin(volumewidget, 0, 0, 5, 5)
 
 -- GPU
+local gpuwidget
 if hostname == "yaqi-MS-7978" then
     local gputext = wibox.widget.textbox()
     local gpuUpdate = function()
@@ -466,7 +478,7 @@ if hostname == "yaqi-MS-7978" then
     end)
     end
 
-    local gpuwidget = wibox.container.margin(
+    gpuwidget = wibox.container.margin(
     wibox.container.background(gputext, theme.bg_focus, widgetBackgroundShape),
     0, 0, 5, 5)
     local gpuTimer = gears.timer {
@@ -477,15 +489,28 @@ if hostname == "yaqi-MS-7978" then
     gpuTimer:start()
 end
 
+local function getPercentageColor(perc)
+   if perc < 30 then
+      return theme.fg_normal
+   elseif perc < 70 then
+      return "#ff8000"
+   else
+      return red
+   end
+end
+
 -- CPU
 local cpu_icon = wibox.widget.imagebox(theme.cpu)
 local cpu = lain.widget.cpu({
       settings = function()
+         local color = getPercentageColor(cpu_now.usage)
          widget:set_markup(
             space2
                .. markup.font(
                   theme.monofont,
-                  "CPU " .. string.format("%2d", cpu_now.usage) .. "%")
+                  "CPU " ..
+                     markup(color, string.format("%2d", cpu_now.usage) .. "%")
+                             )
                .. space2)
       end
 })
@@ -496,11 +521,14 @@ local cpuwidget = wibox.container.margin(cpubg, 0, 0, 5, 5)
 -- Mem
 local mem = lain.widget.mem({
       settings = function()
+         local color = getPercentageColor(mem_now.perc)
          widget:set_markup(
             space2
                .. markup.font(
                   theme.monofont,
-                  "MEM " .. string.format("%2d", mem_now.perc) .. "%")
+                  "MEM " ..
+                     markup(color, string.format("%2d", mem_now.perc) .. "%")
+                             )
                .. space2)
       end
 })
@@ -512,23 +540,46 @@ local membg = wibox.container.background(
 local memwidget = wibox.container.margin(membg, 0, 0, 5, 5)
 
 -- Net
+
+local function networkSpeedColor(speed)
+   if speed < 40 * 1024 then
+      return theme.fg_normal
+   elseif speed < 70 * 1024 then
+      return "#ff8000"
+   else
+      return "#B22222"
+   end
+end -- of function
+
+
+local function formatSpeed(input)
+   local speedNameList = {'KB', 'MB', 'GB'}
+   local base = math.log(input, 1024)
+
+   local color = networkSpeedColor(tonumber(input))
+   
+   if tonumber(input) < 1 then
+      return markup(color, string.format("%6.1f KB", tonumber(input)))
+      -- return string.format("%6.1f KB", tonumber(input))
+   else
+
+      return markup(
+         color,
+         string.format(
+            "%6.1f %s",
+            math.pow(1024, base - math.floor(base)),
+            speedNameList[math.floor(base) + 1]))
+
+      -- string.format(
+      --    "%6.1f %s",
+      --    math.pow(1024, base - math.floor(base)),
+      --    speedNameList[math.floor(base) + 1])
+
+   end
+end -- of function
+
 local net = lain.widget.net({
       settings = function()
-         
-         local function formatSpeed(input)
-            local speedNameList = {'KB', 'MB', 'GB'}
-            local base = math.log(input, 1024)
-            
-            if tonumber(input) < 1 then
-               return string.format("%6.1f KB", tonumber(input))
-            else
-               return string.format(
-                  "%6.1f %s",
-                  math.pow(1024, base - math.floor(base)),
-                  speedNameList[math.floor(base) + 1])
-            end
-         end -- of function
-         
          widget:set_markup(
             "  ⬇ " .. markup.font(theme.monofont, formatSpeed(net_now.received))
                .. " - ⬆ " .. markup.font(theme.monofont, formatSpeed(net_now.sent)) .. "  ")
@@ -698,6 +749,13 @@ function theme.at_screen_connect(s)
       },
       theme.bg_focus, widgetBackgroundShape)
    s.mytag = wibox.container.margin(mytaglistcont, 0, 0, 5, 5)
+
+
+   -- create wallpaper indicator
+   s.wallText = wibox.widget.textbox(markup.font(theme.monofont, "  [0/0]  "))
+   s.wallWidget = wibox.container.margin(
+      wibox.container.background(s.wallText, theme.bg_focus, widgetBackgroundShape),
+      0, 0, 5, 5)
    
    -- Create the indicator
    if screen:count() > 1 then
@@ -713,7 +771,7 @@ function theme.at_screen_connect(s)
    else
       s.myfocuswidget = nil
    end
-   
+
    -- Create a tasklist widget
    s.mytasklist = awful.widget.tasklist(
       s, awful.widget.tasklist.filter.currenttags,
@@ -750,7 +808,7 @@ function theme.at_screen_connect(s)
          spacing = 10,
          mysystraycontainer,
          -- VPN
-         -- vpntextwidget,
+         vpntextwidget,
          -- Net
          networkwidget,
          -- bat
@@ -776,7 +834,13 @@ function theme.at_screen_connect(s)
          space2Widget
       }
    else
-      mytoprightwibox = nil
+      mytoprightwibox = {
+         layout = wibox.layout.fixed.horizontal,
+         spacing_widget = bar,
+         spacing = 10,
+         clockwidget,
+         space2Widget
+      }
    end
    
    -- Add widgets to the wibox
@@ -792,6 +856,7 @@ function theme.at_screen_connect(s)
          -- spr_small,
          -- s.mylayoutbox,
          s.mylayout,
+         s.wallWidget,
          -- spr_small,
          s.mypromptboxcontainer,
       },

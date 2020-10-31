@@ -8,7 +8,6 @@ function run {
 
 run dropbox start > /dev/null 2>&1 
 run cmus-daemon
-run xcompmgr -D5 -I.05 -O.05 -c -f -F -C -t-5 -l-5 -r4.2 -o.55
 
 # Load this late
 if [[ $(/bin/hostname) == "weyl" ]]; then

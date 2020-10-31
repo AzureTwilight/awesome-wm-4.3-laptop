@@ -5,13 +5,22 @@ local client        = client
 local awful         = require("awful")
 local beautiful     = require("beautiful")
 local naughty       = require("naughty")
+local lain    = require("lain")
 local os = os
 local next = next
 local math = math
 local table = table
 
 local M = {}
+local notiWidth = 600
 
+
+local wallpaperFunction = {
+   fit=gears.wallpaper.fit,
+   centered=gears.wallpaper.centered,
+   max=gears.wallpaper.maximized,
+   tile=gears.wallpaper.tiled
+}
 
 M.init = function()
    M.filelist = {}
@@ -19,31 +28,50 @@ M.init = function()
    M.lastFocusedScreenIndex = 1
    M.lastFocusedClient = nil
    M.wallpaperMode = "max"
+   M.currentTag = 'n/a'
    M.filelistCMD = nil
    M.quiteMode = false
-   M.icon = beautiful.refreshed
    M.currentIdx = nil
    M.shuffleMode = false
    math.randomseed(os.time())
+
+   local modeMenu = {}
+   for key, val in pairs(wallpaperFunction) do
+      table.insert(modeMenu, {'mode ' .. key, function() M.changeWallpaperMode(key) end})
+   end
    
    local toggleMenu = {}
    if type(beautiful.wallpaper) == "table" then
       for idx, val in ipairs(beautiful.wallpaper) do
          table.insert(toggleMenu,
-                      {"[Gallery] " .. val.name, function() M.toggleMode(idx) end})
+                      {"[Gallery] " .. val.name, function() M.toggleGallery(idx) end})
       end
       M.wallpaperPath = beautiful.wallpaper[1].path
       M.wallpaperMode = beautiful.wallpaper[1].mode
    else
       M.wallpaperPath = beautiful.wallpaper
    end -- if type(beautiful.wallpaper)
+
+   local wallpaperActionMenu = {
+      { "Show Wallpaper Info", function() M.showWallpaperInfo(awful.screen.focused()) end},
+      { "Copied Current MD5", function() M.copyMD5(awful.screen.focused()) end},
+      { "Ignore Current Wallpaper", function() M.ignoreCurrentWallpaper(awful.screen.focused()) end},
+      { "Accept Current Wallpaper", function() M.ignoreCurrentWallpaper(awful.screen.focused(), true) end}
+   }
+   local galleryActionMenu = {
+      { "Toggle Quite Mode", function() M.toggleQuiteMode() end},
+      { "Change Wallpaper Mode", modeMenu},
+      { "Update Wallpaper Files", function() M.updateFilelist() end},
+      { "Change Wallpaper Interval", function() M.changeWallpaperInterval() end},
+      { "[H18-Only] Set Tag", function() M.setTag() end}
+   }
    
    M.menu = {
       { "Refresh Wallpaper", function() M.refresh() end},
-      { "Show Wallpaper Info", function() M.showWallpaperInfo(awful.screen.focused()) end},
-      { "Update Wallpaper Files", function() M.updateFilelist() end},
-      { "Change Wallpaper Interval", function() M.changeWallpaperInterval() end},
-      { "Toggle Wallpaper Gallery", toggleMenu}}
+      { "Wallpaper Actions", wallpaperActionMenu},
+      { "Gallery Actions", galleryActionMenu},
+      { "Switch Wallpaper Gallery", toggleMenu},
+   }
 
    M.updateFilelist(true)
    M.timer = gears.timer {
@@ -55,6 +83,23 @@ M.init = function()
 
 end -- M.init
 
+M.toggleQuiteMode = function()
+
+   M.quiteMode = not M.quiteMode
+   local quiteMode
+   if M.quiteMode then
+      quiteMode = 'on'
+   else
+      quiteMode = 'off'
+   end
+
+   naughty.notify({ title = "Wallpaper Quite Mode Changed to " .. quiteMode,
+                    position = "bottom_middle",
+                    icon  = beautiful.refreshed, icon_size = 64,
+                    width = notiWidth})
+
+end -- M.toggleQuiteMode
+
 M.changeWallpaperInterval = function()
     awful.prompt.run {
         prompt       = '<b>Wallpaper Interval (sec): </b>',
@@ -64,11 +109,31 @@ M.changeWallpaperInterval = function()
         textbox      = mouse.screen.mypromptbox.widget,
         exe_callback = function(input)
             if not input or #input == 0 then input = 900 end
-            naughty.notify{ text = 'Set Wallpaper Interval: '.. input }
+            naughty.notify{
+               text = 'Set Wallpaper Interval: '.. input,
+               position = "bottom_middle",
+               width = notiWidth}
             M.timer.timeout = input
             M.timer:again()
         end
     }
+end
+local function split(s, delimiter)
+    result = {};
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match);
+    end
+    return result;
+end
+
+local function getMD5(path)
+   local tmp = split(path, '_')
+   if tmp then
+      md5 = tmp[#tmp]:sub(1, 32)
+   else
+      md5 = false
+   end
+   return md5
 end
 
 M.setWallpaper = function(s, f)
@@ -106,34 +171,92 @@ M.setWallpaper = function(s, f)
          M.showWallpaperInfo(s)
       end
       
-      if M.wallpaperMode == "fit" then
-         gears.wallpaper.fit(s.wallpaper, s)
-      elseif M.wallpaperMode == "max" then
-         gears.wallpaper.maximized(s.wallpaper, s)
-      elseif M.wallpaperMode == "auto" then
-         awful.spawn.easy_async_with_shell(
-            "identify " .. s.wallpaper,
-            function(out)
-               local imgw, imgh = string.match(out, " (%d+)x(%d+) ")
-               
-               local imgratio = imgw / imgh
-               local ratio = s.geometry.width / s.geometry.height
-               
-               local wallFunc
-               
-               if math.abs( (imgratio / ratio) - 1) > 0.4 then
-                  wallFunc = gears.wallpaper.fit
-               else
-                  wallFunc = gears.wallpaper.maximized
-               end
-               wallFunc(s.wallpaper, s)
-         end)
-      end -- if M.wallpaperMode
+      wallpaperFunction[M.wallpaperMode](s.wallpaper, s)
 
       if f ~= nil then
          f:write(" SET!\n")
       end
+
+      local curIdx
+      if s.currentIdx ~= nil then
+         curIdx = s.currentIdx
+      else
+         curIdx = 0
+      end
+      local text = '  [' .. curIdx .. '/' .. #M.filelist .. ']  '
+      s.wallText:set_markup(text)
+
    end -- if s.wallpaper ~= nil
+end
+
+M.changeWallpaperMode = function(mode)
+
+   if mode == "fit" or mode == "max" or mode == "tile" or mode == "centered" then
+      M.wallpaperMode = mode
+      naughty.notify{
+         text = 'Change wallpaper model to ' .. mode,
+         position = "bottom_middle",
+         width = notiWidth,
+      }
+
+      for s in screen do
+         wallpaperFunction[mode](s.wallpaper, s) --, f)
+      end
+
+   else
+      naughty.notify{
+         text = 'Only support "fit", "max", "tile", "centered", input is ' .. mode,
+         position = "bottom_middle",
+         width = notiWidth,
+      }
+   end
+
+end
+M.setTag = function()
+   awful.prompt.run {
+      prompt       = '<b>Tag: </b>',
+      -- text         = tostring(M.timer.timeout),
+      bg_cursor    = '#ff0000',
+      -- To use the default rc.lua prompt:
+      textbox      = mouse.screen.mypromptbox.widget,
+      exe_callback = function(input)
+         if input then
+            naughty.notify{
+               text = 'Querying database for tag: '.. input,
+               position = "bottom_middle",
+               width = notiWidth
+            }
+            cmd = "sqlite3 " .. os.getenv("HOME") .. "/Pictures/database.db "
+               .. "'select FilePath from MAIN_TBL where ID in "
+               .. "(select ImgID from IMG_TO_TAG as A inner join TAG_TBL as B on A.TagID=B.ID "
+               .. 'where TagName="' .. input .. '"' .. ") AND WALLPAPER=0' | shuf > /tmp/wall-list"
+            
+            awful.spawn.easy_async_with_shell(
+               cmd .. "-new",
+               function(out)
+                  fh = io.open('/tmp/wall-list-new')
+                  if fh:seek("end") ~= 0 then
+                     fh:close()
+                     M.filelistCMD = "mv /tmp/wall-list-new /tmp/wall-list"
+                     if M.galleryName == "HCG-R18" then
+                        M.updateFilelist(true)
+                     else
+                        M.toggleGallery(3, M.filelistCMD)
+                     end
+                     M.currentTag = input
+                     M.filelistCMD = cmd
+                  else
+                     fh:close()
+                     naughty.notify{
+                        text = "Didn't find any wallpapers matching tag.\nCMD:" .. cmd,
+                        position = "bottom_middle",
+                        width = notiWidth}
+                  end
+            end)
+            
+         end
+      end
+   }
 end
 
 M.updateFilelist = function(doRefresh)
@@ -148,31 +271,36 @@ M.updateFilelist = function(doRefresh)
       cmd = M.filelistCMD
    else
       cmd =  "find -L " .. M.wallpaperPath
-         .. ' -iname "*.png" -or -iname "*.jpg" -or -iname "*.jpeg" > /tmp/wall-list'
+         .. ' \\( -iname "*.png" -or -iname "*.jpg" -or -iname "*.jpeg" \\) -printf "%P\\n" | shuf > /tmp/wall-list'
    end
+
+   naughty.notify(
+      { title = "Updating wallpaper database",
+        text  = "Folder: " .. M.wallpaperPath, -- .. '\nCMD: ' .. cmd,
+        position = "bottom_middle",
+        icon  = beautiful.refreshed, icon_size = 64,
+        width = notiWidth})
+   
    awful.spawn.easy_async_with_shell(
       cmd,
-      function (out)
-         naughty.notify(
-            { title = "Updating wallpaper database",
-              text  = "Folder: " .. M.wallpaperPath,
-              icon  = M.icon, icon_size = 64,})
-
+      function(out)
          fh = io.open('/tmp/wall-list', 'r')
          line = fh:read()
          if line ~= nil then
-            M.filelist[#M.filelist+1] = line
+            M.filelist[#M.filelist+1] = M.wallpaperPath .. line
             while true do
                 line = fh:read()
                 if line == nil then break end
-                M.filelist[#M.filelist+1] = line
+                M.filelist[#M.filelist+1] = M.wallpaperPath .. line
             end
          end
          fh:close()
          
          naughty.notify({ title = "Wallpaper database updated!",
                           text  = "Found: " .. #M.filelist .. " items",
-                          icon  = M.icon, icon_size = 64,})
+                          position = "bottom_middle",
+                          icon  = beautiful.refreshed, icon_size = 64,
+                          width = notiWidth})
          
          if doRefresh then
             M.setAllWallpapers()
@@ -182,12 +310,12 @@ M.updateFilelist = function(doRefresh)
 end -- end of M.updateFilelist
 
 M.setAllWallpapers = function()
-   local f = io.open( "/tmp/awesome_wallpaper.log", 'a')
-   f:write(os.date("[%Y-%m-%d %H:%M:%S]") .. "\n")
+   -- local f = io.open( "/tmp/awesome_wallpaper.log", 'a')
+   -- f:write(os.date("[%Y-%m-%d %H:%M:%S]") .. "\n")
    for s in screen do
-      M.setWallpaper(s, f)
+      M.setWallpaper(s) --, f)
    end
-   f:close()
+   -- f:close()
 end 
 
 M.refresh = function(resetTimer, shift)
@@ -210,6 +338,125 @@ M.refresh = function(resetTimer, shift)
    end
 end
 
+M.shiftWallpaperForCurrentScreen = function(s, shift)
+   M.currentIdx = M.currentIdx + 2 * shift
+   if M.currentIdx < 1 then
+      M.currentIdx = nil
+   end
+   M.setWallpaper(s)
+end
+
+local function notiOnIgnore(s, reverse, notiTextExtra)
+   local curIdx
+   if s.currentIdx ~= nil then
+      curIdx = s.currentIdx
+   else
+      curIdx = 'n/a'
+   end
+
+   local notiText = "Filename: " .. s.wallpaper
+      .. '\nIndex: ' .. curIdx
+
+   if notiTextExtra then
+      notiText = notiText .. notiTextExtra
+   end
+
+   local notiTitle
+   local icon
+   if reverse then
+      -- color = "#32CD32"  -- green
+      icon = beautiful.greencheck
+      notiTitle = "Accepted"
+   else
+      -- color = "#B22222" -- red
+      icon = beautiful.redx
+      notiTitle = "Ignored"
+      M.setWallpaper(s)
+   end
+
+   naughty.notify(
+      { title  = "Wallpaper " .. notiTitle,
+        text   = notiText,
+        position = "bottom_middle",
+        timeout = 5,
+        -- shape = gears.shape.rectangle,
+        -- border_width = 2,
+        -- border_color = color,
+        icon  = icon, icon_size = 64, screen = s,
+        width = 1000})
+end -- of function
+
+M.ignoreCurrentWallpaper = function(s, reverse)
+
+
+   if M.galleryName == "HCG-R18" then
+
+      local md5 = getMD5(s.wallpaper)
+      if md5 ~= false then
+
+         local wall
+         if reverse then
+            wall = '0'
+         else
+            wall = '1'
+         end
+         
+         cmd = "sqlite3 " .. os.getenv("HOME") .. "/Pictures/database.db "
+            .. "'update MAIN_TBL set WALLPAPER=" .. wall .. ", CHECKED=1 where MD5="
+            .. '"' .. md5 .. '"' .. ";'"
+         awful.spawn.easy_async_with_shell(
+            cmd,
+            function (out)
+                  local notiTextExtra = '\nMD5: ' .. md5
+                  notiOnIgnore(s, reverse, notiTextExtra)
+            end
+         )
+      end
+   else -- for other folder w/o database
+      if not reverse then
+         os.rename(s.wallpaper, s.wallpaper .. ".ignore")
+         if s.currentIdx ~= nil then
+            M.filelist[s.currentIdx] = s.wallpaper .. ".ignore"
+         end
+      else
+         -- now the wallpaper path is with .ignore suffix
+         os.rename(s.wallpaper, s.wallpaper:sub(1, -8))
+         if s.currentIdx ~= nil then
+            M.filelist[s.currentIdx] = s.wallpaper:sub(1, -8)
+         end
+      end
+      notiOnIgnore(s, reverse)
+   end -- end of if gallery
+
+end
+
+M.copyMD5 = function(s)
+
+   local md5 = getMD5(s.wallpaper)
+   if md5 == nil then
+      naughty.notify(
+         { text   = "No MD5 Matched",
+           position = "bottom_left",
+           icon   = beautiful.refreshed,
+           icon_size = 64, screen = s,
+           width = notiWidth})
+   else
+      local cmd = "echo " .. '"' .. md5 .. '" ' .. " | xclip -selection c"
+      awful.spawn.easy_async_with_shell(
+         cmd,
+         function (out)
+            naughty.notify(
+               { text   = "MD5 copied to clipboard",
+                 position = "bottom_middle",
+                 icon   = beautiful.refreshed,
+                 icon_size = 64, screen = s,
+                 width = notiWidth})
+         end
+      )
+   end
+
+end
+
 M.showWallpaperInfo = function(s)
 
    local curIdx
@@ -219,21 +466,34 @@ M.showWallpaperInfo = function(s)
       curIdx = 'n/a'
    end
 
+   local md5 = getMD5(s.wallpaper)
+   if md5 == nil then
+      md5 = "No matched"
+   end
+
     naughty.notify(
         { title  = "Wallpaper Info",
-          text   = "Filename:" .. s.wallpaper
-             .. '\nPath:' .. M.wallpaperPath
-             .. '\nIndex:' .. curIdx .. " (" .. #M.filelist .. ")",
-        icon   = M.icon, icon_size = 64, screen = s})
+          text   = "Filename: " .. s.wallpaper
+             .. '\nPath:  ' .. M.wallpaperPath
+             .. '\nIndex: ' .. curIdx .. " (" .. #M.filelist .. ")"
+             .. '\nMD5: ' .. md5
+             .. '\nTag: ' .. M.currentTag,
+          position = "bottom_left",
+          icon   = beautiful.refreshed, icon_size = 64, screen = s})
 end
 
-M.toggleMode = function(idx)
+M.toggleGallery = function(idx, overrideCMD)
    M.wallpaperPath = beautiful.wallpaper[idx].path
    M.wallpaperMode = beautiful.wallpaper[idx].mode
    M.quiteMode     = beautiful.wallpaper[idx].quite or false
    M.shuffleMode   = beautiful.wallpaper[idx].shuffle or false
    M.filelistCMD   = beautiful.wallpaper[idx].cmd or nil
+   M.galleryName   = beautiful.wallpaper[idx].name
    local interval  = beautiful.wallpaper[idx].interval or nil
+
+   if overrideCMD ~= nil then
+      M.filelistCMD = overrideCMD
+   end
 
    local quiteMode
    if M.quiteMode then
@@ -242,20 +502,27 @@ M.toggleMode = function(idx)
       quiteMode = 'off'
    end
 
+   local intervalText
+   if interval ~= nil then
+      M.timer.timeout = interval
+      intervalText = tostring(interval)
+      M.timer:again()
+   else
+      intervalText = "n/a"
+   end
+
    naughty.notify({ title = "Wallpaper Mode Changed",
                     text  = "Path: " .. M.wallpaperPath
                        .. '\nMode: ' .. M.wallpaperMode
-                       .. '\nQuite: ' .. quiteMode,
-                    icon  = M.icon, icon_size = 64})
+                       .. '\nQuite: ' .. quiteMode
+                       .. '\nInterval: ' .. intervalText,
+                    position = "bottom_middle",
+                    icon  = beautiful.refreshed, icon_size = 64,
+                    width = notiWidth})
    if (M.wallpaperPath:sub(-1) == "/") then
       M.updateFilelist(true)
    end
 
-   if interval ~= nil then
-      naughty.notify{ text = 'Set Wallpaper Interval: ' .. interval }
-      M.timer.timeout = interval
-      M.timer:again()
-   end
 
 end
 
