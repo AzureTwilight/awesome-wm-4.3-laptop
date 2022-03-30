@@ -150,11 +150,12 @@ theme.net_down              = theme.icon_dir .. "/net_down.png"
 theme.layout_tile           = theme.icon_dir .. "/mytile.png"
 theme.layout_tiletop        = theme.icon_dir .. "/mytiletop.png"
 theme.layout_floating       = theme.icon_dir .. "/myfloating.png"
+theme.layout_max            = theme.icon_dir .. "/mymax.png"
 
 theme.refreshed             = theme.icon_dir .. "/refreshed.png"
 theme.warning               = theme.icon_dir .. "/warning.png"
-theme.redx               = theme.icon_dir .. "/redx.png"
-theme.greencheck               = theme.icon_dir .. "/greencheck.png"
+theme.my_redx               = theme.icon_dir .. "/my_redx.png"
+theme.my_greencheck               = theme.icon_dir .. "/my_greencheck.png"
 theme.brightness            = theme.icon_dir .. "/brightness_icon.png"
 
 theme.useless_gap              = 0
