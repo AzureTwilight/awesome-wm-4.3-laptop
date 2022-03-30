@@ -205,46 +205,124 @@ local bar = wibox.widget{
 }
 local space2Widget = wibox.widget.textbox(space2)
 local space4Widget = wibox.widget.textbox(space2 .. space2)
-local green = "#32CD32"
-local red   = "#B22222"
+local my_green = "#32CD32"
+
+-- local my_red   = "#B22222"
+-- local my_yellow = "#FFC300"
+
+local my_red   = "#FF4949"
+local my_yellow = "#FFAD22"
+
+local my_lightgray = "#a0a0a0"
+
+
+local function hex_to_rgb(hex_str)
+   local rgb_table = {}
+   for i = 2,6,2 do
+      rgb_table[i//2] = tonumber('0x' .. hex_str:sub(i, i+1))
+   end 
+   return rgb_table
+end
+
+local function rgb_to_hex(rgb_table)
+   local hex_str = "#"
+   for _, num in ipairs(rgb_table) do
+      hex_str = hex_str .. string.format("%02x", math.floor(num))
+   end
+   return hex_str
+end
+
+local my_green_rgb = hex_to_rgb(my_green)
+local my_red_rgb = hex_to_rgb(my_red)
+local my_yellow_rgb = hex_to_rgb(my_yellow)
+local my_fg_normal_rgb = hex_to_rgb(theme.fg_normal)
+
+local function get_linear_gradient(ratio)
+   local ratio = math.max(math.min(ratio, 1), 0)
+
+   -- local start_rgb = my_green_rgb
+   local start_rgb = my_fg_normal_rgb
+   local end_rgb = my_yellow_rgb
+   local prop = ratio * 2
+   if ratio > 0.5 then
+      start_rgb = my_yellow_rgb
+      end_rgb = my_red_rgb
+      prop = 2 * ratio - 1
+   end
+   
+   local tmp_rgb = {}
+   local invprop = 1 - prop
+
+   for idx, c in ipairs(start_rgb) do
+      tmp_rgb[idx] = c * invprop + end_rgb[idx] * prop
+   end
+
+   return rgb_to_hex(tmp_rgb)
+end
+
+-- local function getPercentageColor(perc)
+--    if perc < 30 then
+--       return theme.fg_normal
+--    elseif perc < 70 then
+-- return "#ff8000"
+--    else
+--       return my_red
+--    end
+-- end
 
 -----------------------------------------------------------------------------
 
 -- VPN Indicator
 local vpntextwidget = nil
-if hostname ~= "ThinkPad" then
-    local vpnOffMarkup = space2 .. markup.font(theme.font, "VPN: ")
-    .. markup.font(theme.monofont, markup(red, "OFF")) .. space2
-    local vpntext = wibox.widget.textbox(vpnOffMarkup)
-    vpntextwidget = wibox.container.background(
-    vpntext, theme.bg_focus, widgetBackgroundShape)
-    vpntextwidget = wibox.container.margin(vpntextwidget, 0, 0, 5, 5)
+local vpnOffMarkup = space2
+   .. markup.font(theme.monofont, "VPN " .. markup(my_lightgray, "OFF")) .. space2
 
-    theme.vpnUpdate = function()
-    awful.spawn.easy_async_with_shell(
-        "/usr/bin/purevpn -s",
-        function(out)
-            local conn = out:match("Not connected")
-            if conn == nil then -- connected
-                awful.spawn.easy_async_with_shell(
-                "/usr/bin/purevpn -i",
-                function(out)
-                    local city = out:match("City:[ ]*([^\n]*)") or ""
-                    local country = out:match("Country:[^%(]*%(([^%)]*)%)") or ""
-                    local text = markup.font(theme.font,
-                                            "VPN: " .. markup(green, "ON")
-                                                .. " (" .. city .. ", " .. country
-                                                .. ")")
-                    vpntext:set_markup(text)
-                end)
+local vpntext = wibox.widget.textbox(vpnOffMarkup)
+vpntextwidget = wibox.container.background(
+   vpntext, theme.bg_focus, widgetBackgroundShape)
+vpntextwidget = wibox.container.margin(vpntextwidget, 0, 0, 5, 5)
+local openvpn_status_old = nil
+
+theme.update_vpn_widget = function(force_flg)
+   awful.spawn.easy_async_with_shell(
+      "pgrep openvpn",
+      function(out, err, reason, code)
+         local openvpn_is_running
+         if code == 0 then
+            openvpn_is_running = true
+         else
+            openvpn_is_running = false
+         end
+
+         -- only update when forced or the status changed
+         if force_flg == true or openvpn_status_old ~= openvpn_is_running then
+            if openvpn_is_running then -- connected
+               awful.spawn.easy_async_with_shell(
+                  "curl -s https://freegeoip.app/csv/$(curl -s ifconfig.co)" ..
+                  " | awk -F ',' '{print $6 \", \" $2 \"@\" $1 }'",
+                  function(out)
+                     -- local location = out:gsub("@.*$", "")
+                     -- local ip_addr = out:gsub("^[^@]*@", "")
+                     
+                     local text = space2 .. markup.font(theme.monofont, "VPN " .. markup(my_green, out) .. "  ") .. space2
+                     vpntext:set_markup(text)
+                  end
+               )
             else
-                vpntext:set_markup(vpnOffMarkup)
+               vpntext:set_markup(vpnOffMarkup)
             end
-    end)
-    end
-    vpntextwidget:connect_signal(
-    "mouse::enter", function() theme.vpnUpdate() end)
+         end
+
+         openvpn_status_old = openvpn_is_running
+   end)
 end
+
+local vpnwidget_timer = gears.timer {
+   timeout = 10,
+   call_now = true,
+   autostart = false,
+   callback = function() theme.update_vpn_widget() end}
+vpnwidget_timer:start()
 
 -- Clock
 local mytextclock = wibox.widget.textclock(
@@ -455,21 +533,12 @@ if hostname == "yaqi-MS-7978" then
     gpuTimer:start()
 end
 
-local function getPercentageColor(perc)
-   if perc < 30 then
-      return theme.fg_normal
-   elseif perc < 70 then
-      return "#ff8000"
-   else
-      return red
-   end
-end
-
 -- CPU
 local cpu_icon = wibox.widget.imagebox(theme.cpu)
 local cpu = lain.widget.cpu({
       settings = function()
-         local color = getPercentageColor(cpu_now.usage)
+         -- local color = getPercentageColor(cpu_now.usage)
+         local color = get_linear_gradient(cpu_now.usage / 100.)
          widget:set_markup(
             space2
                .. markup.font(
@@ -487,13 +556,12 @@ local cpuwidget = wibox.container.margin(cpubg, 0, 0, 5, 5)
 -- Mem
 local mem = lain.widget.mem({
       settings = function()
-         local color = getPercentageColor(mem_now.perc)
+         -- local color = getPercentageColor(mem_now.perc)
+         local color = get_linear_gradient(mem_now.perc / 100.)
          widget:set_markup(
             space2
                .. markup.font(
-                  theme.monofont,
-                  "MEM " ..
-                     markup(color, string.format("%2d", mem_now.perc) .. "%")
+                  theme.monofont, "MEM " .. markup(color, string.format("%2d", mem_now.perc) .. "%")
                              )
                .. space2)
       end
@@ -507,39 +575,32 @@ local memwidget = wibox.container.margin(membg, 0, 0, 5, 5)
 
 -- Net
 
-local function networkSpeedColor(speed)
-   if speed < 40 * 1024 then
-      return theme.fg_normal
-   elseif speed < 70 * 1024 then
-      return "#ff8000"
-   else
-      return "#B22222"
-   end
-end -- of function
+-- local function networkSpeedColor(speed)
+--    if speed < 20 * 1024 then
+--       return theme.fg_normal
+--    elseif speed < 40 * 1024 then
+--       return "#ff8000"
+--    else
+--       return "#B22222"
+--    end
+-- end -- of function
 
 
-local function formatSpeed(input)
+local function formatSpeed(input, max_speed)
    local speedNameList = {'KB', 'MB', 'GB'}
    local base = math.log(input, 1024)
-
-   local color = networkSpeedColor(tonumber(input))
+   local numerical_speed = tonumber(input) -- unit is KB
+   -- local color = networkSpeedColor(tonumber(input))
+   local color = get_linear_gradient(numerical_speed / max_speed) -- 50 MB as maximum
    
-   if tonumber(input) < 1 then
-      return markup(color, string.format("%6.1f KB", tonumber(input)))
-      -- return string.format("%6.1f KB", tonumber(input))
+   if numerical_speed < 1 then
+      return markup(color, string.format("%6.1f KB", numerical_speed))
    else
-
-      return markup(
-         color,
-         string.format(
-            "%6.1f %s",
-            math.pow(1024, base - math.floor(base)),
-            speedNameList[math.floor(base) + 1]))
-
-      -- string.format(
-      --    "%6.1f %s",
-      --    math.pow(1024, base - math.floor(base)),
-      --    speedNameList[math.floor(base) + 1])
+      local tmp_ = math.floor(base)
+      return markup(color,
+                    string.format("%6.1f %s",
+                                  math.pow(1024, base - tmp_),
+                                  speedNameList[tmp_ + 1]))
 
    end
 end -- of function
@@ -727,7 +788,7 @@ function theme.at_screen_connect(s)
    if screen:count() > 1 then
       s.focuswidget = wibox.widget {
          checked       = (s == awful.screen.focused()),
-         color         = green, --beautiful.bg_normal,
+         color         = my_green, --beautiful.bg_normal,
          paddings      = 2,
          shape         = gears.shape['circle'],
          widget        = wibox.widget.checkbox,
