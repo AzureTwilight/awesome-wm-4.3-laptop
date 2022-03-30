@@ -188,58 +188,7 @@ theme.layout_centerfair  = theme.icon_dir .. "/mycenterfair.png"  -- termfair.ce
 theme.layout_cascade     = theme.icon_dir .. "/mycascade.png"
 theme.layout_centerwork  = theme.icon_dir .. "/mycenterwork.png"
 
--- screen index translation
--- translate the physical index to build in index
-theme.myScreenIdx = {}
--- translate built-in index to physical index
-theme.myScreenIdxReverse = {}
-local idxTable = {}
-local sortTable = {}
-for s in screen do
-   sortTable[#sortTable+1] = s.geometry.x
-   idxTable[s.geometry.x] = s.index
-end
-table.sort(sortTable)
-for k, v in pairs(sortTable) do
-   theme.myScreenIdx[k] = idxTable[v]
-   theme.myScreenIdxReverse[idxTable[v]] = k
-end
-
 local hostname = helpers.first_line('/etc/hostname'):gsub('\n', '')
-
--- Create Jump Menu
-theme.app_menu = function(appClass, newCmd)
-   local items = {}
-   local minimizedStatus = ""
-   local header = ""
-   
-   for i, c in pairs(client.get()) do
-      if awful.rules.match(c, {class = appClass}) then
-         if c.minimized then
-            minimized = "*"
-         else
-            minimized = " "
-         end
-
-        header = string.format(
-            "%s[S%d-%d] %s",
-            minimized, theme.myScreenIdxReverse[c.screen.index], c.first_tag.index, c.name)
-
-         items[#items+1] =
-            {header, function()
-                c.first_tag:view_only()
-                client.focus = c
-             end, c.icon}
-      end
-   end
-   items[#items+1] = {string.format("Create New %s Client", appClass), newCmd}
-
-   local s = awful.screen.focused()
-   local x = math.floor(s.geometry.x + s.geometry.width / 2 - theme.menu_width / 2)
-   local y = math.floor(s.geometry.y + s.geometry.height / 2)
-   
-   awful.menu({items = items}):show({coords = {x = x, y = y}})
-end
 
 local markup = lain.util.markup
 local blue   = "#80CCE6"

@@ -811,6 +811,69 @@ for i = 1, 10 do
     )
 end
 
+-- ****** screen counting ********
+-- translate the physical index to build in index
+myScreenIdx = {}
+-- translate built-in index to physical index
+myScreenIdxReverse = {}
+
+local updateScreenList = function () 
+   local idxTable = {}
+   local sortTable = {}
+   for s in screen do
+      sortTable[#sortTable+1] = s.geometry.x
+      idxTable[s.geometry.x] = s.index
+   end
+   table.sort(sortTable)
+   for k, v in pairs(sortTable) do
+     myScreenIdx[k] = idxTable[v]
+     myScreenIdxReverse[idxTable[v]] = k
+     -- naughty.notify({title = "Updated screenTable",
+     --                 text = tostring(k) .. ':' .. tostring(v),
+     --                 timeout = 0})
+   end
+   for s in screen do
+      report_monitor(s)
+   end
+end
+updateScreenList()
+screen.connect_signal("list", updateScreenList)
+
+-- Create Jump Menu
+local my_app_menu = function(appClass, newCmd)
+   local items = {}
+   local minimizedStatus = ""
+   local header = ""
+   
+   for i, c in pairs(client.get()) do
+      if awful.rules.match(c, {class = appClass}) then
+         if c.minimized then
+            minimized = "*"
+         else
+            minimized = " "
+         end
+
+        header = string.format(
+            "%s[S%d-%d] %s",
+            minimized, myScreenIdxReverse[c.screen.index], c.first_tag.index, c.name)
+
+         items[#items+1] =
+            {header, function()
+                c.first_tag:view_only()
+                client.focus = c
+             end, c.icon}
+      end
+   end
+   items[#items+1] = {string.format("Create New %s Client", appClass), newCmd}
+
+   local s = awful.screen.focused()
+   local x = math.floor(s.geometry.x + s.geometry.width / 2 - theme.menu_width / 2)
+   local y = math.floor(s.geometry.y + s.geometry.height / 2)
+   
+   awful.menu({items = items}):show({coords = {x = x, y = y}})
+end
+
+
 for i = 1, screen:count() do
     local descr_view, descr_move
     if i == 1 or i == screen:count() then
@@ -822,7 +885,7 @@ for i = 1, screen:count() do
       -- View tag only.
       awful.key({ hyperkey }, "#" .. i + 9,
          function ()
-            awful.screen.focus(beautiful.myScreenIdx[i])
+            awful.screen.focus(myScreenIdx[i])
             updateFocusWidget()
          end,
          descr_view),
@@ -830,7 +893,7 @@ for i = 1, screen:count() do
       awful.key({ hyperkey, altkey }, "#" .. i + 9,
          function ()
             if client.focus ~= nil then
-               client.focus:move_to_screen(beautiful.myScreenIdx[i])
+               client.focus:move_to_screen(myScreenIdx[i])
             end
          end,
          descr_move)
