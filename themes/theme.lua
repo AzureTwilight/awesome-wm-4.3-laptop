@@ -618,8 +618,11 @@ end -- of function
 local net = lain.widget.net({
       settings = function()
          widget:set_markup(
-            "  ⬇ " .. markup.font(theme.monofont, formatSpeed(net_now.received))
-               .. " - ⬆ " .. markup.font(theme.monofont, formatSpeed(net_now.sent)) .. "  ")
+            -- "  ⬇ " .. markup.font(theme.monofont, formatSpeed(net_now.received))
+            --    .. " - ⬆ " .. markup.font(theme.monofont, formatSpeed(net_now.sent)) .. "  ")
+            -- 51200 KB: 50 MB/s  3072 KB: 3MB/s
+            space2 .. markup.font(theme.monofont, formatSpeed(net_now.received, 51200) .. " [D]" ) ..
+            space2 .. markup.font(theme.monofont, formatSpeed(net_now.sent, 3072) .. " [U]") .. space2)
       end
 })
 local netbg = wibox.container.background(
