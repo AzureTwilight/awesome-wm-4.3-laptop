@@ -618,56 +618,13 @@ local networkwidget = wibox.container.margin(netbg, 0, 0, 5, 5)
 
 -- Weather
 local myweather = lain.widget.weather({
+      APPID = 'b4f5e3c877b4def541f826770d8a4128',
       city_id = 4460162, -- Chapel Hill
       units = "metric",
       notification_preset = {
          font = theme.monofont,
          bg = theme.bg_normal,
       },
-      notification_text_fun = function(wn)
-        -- time of data forecasted
-        local day = os.date("%a %d", wn["dt"])
-        -- weather condition
-        local desc = wn["weather"][1]["description"]
-
-        -- temperatures, units are defined above
-        local tmin = math.floor(wn["temp"]["min"])   -- min daily
-        local tmax = math.floor(wn["temp"]["max"])   -- max daily
-        local tmor = math.floor(wn["temp"]["morn"])  -- morning
-        local tday = math.floor(wn["temp"]["day"])   -- day
-        local teve = math.floor(wn["temp"]["eve"])   -- evening
-        local tnig = math.floor(wn["temp"]["night"]) -- night
-
-        -- pressure, hPa
-        local pres = math.floor(wn["pressure"])
-
-        -- humidity, %
-        local humi = math.floor(wn["humidity"])
-
-        -- wind speed, miles/hour if units are imperial, meter/sec otherwise 
-        local wspe = math.floor(wn["speed"])
-
-        -- wind degrees, meteorological degrees
-        local wdeg = math.floor(wn["deg"])
-
-        -- cloudliness, %
-        local clou = math.floor(wn["clouds"])
-
-        -- format infos as you like, HTML text markup is allowed
-        return string.format(
-           "<br><b>%s</b>: %s<br>"
-              .. "Temp:     min %d - max %d ℃<br>"
-              .. "Wind:     %d mph at %d°<br>"
-              .. "Cloud:    %d%%<br>"
-              .. "Pressure: %d hPa<br>"
-              .. "Humidity: %d%%<br>",
-           day, desc,
-           tmin, tmax,
-           wspe, wdeg,
-           clou,
-           pres,
-           humi)
-    end,
     settings = function()
        if weather_now["main"]["temp"] then
           units = math.floor(weather_now["main"]["temp"])
@@ -681,14 +638,6 @@ local myweather = lain.widget.weather({
     end
 })
 
--- local weathertextbg = wibox.container.background(
---    myweather.widget, theme.bg_focus, widgetBackgroundShape)
--- local weathertextwidget = wibox.container.margin(weathertextbg, 0, 0, 5, 5)
-
--- local weathericonbg = wibox.container.background(
---    myweather.icon, theme.bg_focus, widgetBackgroundShape)
--- local weathericonwidget = wibox.container.margin(weathericonbg, 0, 0, 5, 5)
-
 local weatherwidget = wibox.widget{
    layout=wibox.layout.fixed.horizontal,
    space2Widget,
@@ -701,20 +650,8 @@ local myWeatherWidget = wibox.container.margin(
    wibox.container.background(
       weatherwidget, theme.bg_focus, widgetBackgroundShape),
    0, 0, 5, 5)
+myweather.attach(myWeatherWidget)
 
--- Launcher
--- local mylauncher = awful.widget.button({ image = theme.awesome_icon_launcher })
--- mylauncher:connect_signal(
---    "button::press", function() awful.util.mymainmenu:toggle() end)
-
--- Separators
--- local spr_small = wibox.widget.imagebox(theme.spr_small)
--- local spr_very_small = wibox.widget.imagebox(theme.spr_very_small)
--- local spr_right = wibox.widget.imagebox(theme.spr_right)
--- local spr_bottom_right = wibox.widget.imagebox(theme.spr_bottom_right)
--- local spr_left = wibox.widget.imagebox(theme.spr_left)
--- local bar = wibox.widget.imagebox(theme.bar)
--- local bottom_bar = wibox.widget.imagebox(theme.bottom_bar)
 
 function theme.at_screen_connect(s)
    
