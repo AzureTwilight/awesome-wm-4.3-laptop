@@ -14,6 +14,30 @@ local table = table
 local M = {}
 local notiWidth = 600
 
+local setAllClientsOpacityHelper = function (input_opacity)
+   for s in screen do
+      for _, c in ipairs(s.all_clients) do
+         c.opacity = input_opacity
+      end
+      -- TODO should we set the transparency of wibar as well?
+   end
+end
+
+local setAllClientsOpacity = function()
+   awful.prompt.run{
+      prompt       = '<b>Opacity: </b>',
+      bg_cursor    = '#ff0000',
+      -- To use the default rc.lua prompt:
+      textbox      = mouse.screen.mypromptbox.widget,
+      exe_callback = function(input)
+         if input then
+            local input_opacity = tonumber(input) or 0.97
+            setAllClientsOpacityHelper(input_opacity)
+         end
+      end
+   }
+end
+
 
 local wallpaperFunction = {
    fit=gears.wallpaper.fit,
@@ -25,6 +49,7 @@ local wallpaperFunction = {
 M.init = function()
    M.filelist = {}
    M.showDesktopStatus = false
+   M.showDesktopBuffer = {}
    M.lastFocusedScreenIndex = 1
    M.lastFocusedClient = nil
    M.wallpaperMode = "max"
@@ -63,11 +88,12 @@ M.init = function()
       { "Change Wallpaper Mode", modeMenu},
       { "Update Wallpaper Files", function() M.updateFilelist() end},
       { "Change Wallpaper Interval", function() M.changeWallpaperInterval() end},
-      { "[H18-Only] Set Tag", function() M.setTag() end}
+      { "[DB Only] Set Tag", function() M.setTag() end}
    }
    
    M.menu = {
       { "Refresh Wallpaper", function() M.refresh() end},
+      { "Set Clients Opacity", function() setAllClientsOpacity() end},
       { "Wallpaper Actions", wallpaperActionMenu},
       { "Gallery Actions", galleryActionMenu},
       { "Switch Wallpaper Gallery", toggleMenu},
@@ -113,7 +139,7 @@ M.changeWallpaperInterval = function()
                text = 'Set Wallpaper Interval: '.. input,
                position = "bottom_middle",
                width = notiWidth}
-            M.timer.timeout = input
+            M.timer.timeout = tonumber(input)
             M.timer:again()
         end
     }
@@ -144,7 +170,7 @@ M.setWallpaper = function(s, f)
    if type(M.wallpaperPath) == "function" then
       s.wallpaper = M.wallpaperPath(s)
    else
-      if (M.wallpaperPath:sub(-1) == "/") then
+      if (M.wallpaperPath:sub(-1) == "/" or M.wallpaperPath == "@combine") then
          if next(M.filelist) ~= nil then
             if M.currentIdx == #M.filelist then
                M.currentIdx = nil -- reset to the beginning
@@ -270,8 +296,9 @@ M.updateFilelist = function(doRefresh)
    if M.filelistCMD ~= nil then
       cmd = M.filelistCMD
    else
-      cmd =  "find -L " .. M.wallpaperPath
-         .. ' \\( -iname "*.png" -or -iname "*.jpg" -or -iname "*.jpeg" \\) -printf "%P\\n" | shuf > /tmp/wall-list'
+      if M.wallpaperPath ~= "@combine" then
+         cmd =  "fd -L -i -t f -e png -e jpg -e jpeg . " .. M.wallpaperPath .. ' | shuf > /tmp/wall-list'
+      end
    end
 
    naughty.notify(
@@ -287,11 +314,11 @@ M.updateFilelist = function(doRefresh)
          fh = io.open('/tmp/wall-list', 'r')
          line = fh:read()
          if line ~= nil then
-            M.filelist[#M.filelist+1] = M.wallpaperPath .. line
+            M.filelist[#M.filelist+1] = line
             while true do
                 line = fh:read()
                 if line == nil then break end
-                M.filelist[#M.filelist+1] = M.wallpaperPath .. line
+                M.filelist[#M.filelist+1] = line
             end
          end
          fh:close()
@@ -519,7 +546,7 @@ M.toggleGallery = function(idx, overrideCMD)
                     position = "bottom_middle",
                     icon  = beautiful.refreshed, icon_size = 64,
                     width = notiWidth})
-   if (M.wallpaperPath:sub(-1) == "/") then
+   if (M.wallpaperPath:sub(-1) == "/" or M.wallpaperPath == "@combine") then
       M.updateFilelist(true)
    end
 
@@ -531,40 +558,19 @@ M.toggleShowDesktop = function()
    
    M.showDesktopStatus = not M.showDesktopStatus
 
-   if M.showDesktopStatus then
-      -- M.lastFocusedScreenIndex = awful.screen.focused().index
-      -- M.lastFocusedClient = client.focus
+   if M.showDesktopStatus then  -- now in show desktop mode
+
       for s in screen do
-         local wExist = false
-         for _, t in ipairs(s.tags) do
-            if t.name == "W" then
-               t:view_only()
-               wExist = true
-               break
-            end
-         end -- tag in s.tags
-         if not wExist then
-            awful.tag.add("W", {screen = s}):view_only()
-         end
+         M.showDesktopBuffer[s] = s.selected_tags
+         awful.tag.viewnone(s)
       end
       
    else  -- not showing desktop
       for s in screen do
-         for _, t in ipairs(s.tags) do
-            if t.name == "W" then
-               -- for _, c in ipairs(t:clients()) do
-               --    c:move_to_tag(s.tags[1])
-               -- end
-               t:delete()
-            end
-         end -- tag in s.tags
+         awful.tag.viewmore(M.showDesktopBuffer[s], s)
       end -- s in screen
 
-      -- awful.screen.focus(M.lastFocusedScreenIndex)
-      -- client.focus = M.lastFocusedClient
-      -- if M.lastFocusedClient ~= nil then
-      --    M.lastFocusedClient:raise()
-      -- end
+      M.showDesktopBuffer = {}
 
     end
 
