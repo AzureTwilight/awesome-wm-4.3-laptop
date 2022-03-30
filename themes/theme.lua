@@ -507,18 +507,28 @@ volumewidget = wibox.container.margin(volumewidget, 0, 0, 5, 5)
 
 -- GPU
 local gpuwidget
-if hostname == "yaqi-MS-7978" then
+if hostname == "suzuki-trotter" then
     local gputext = wibox.widget.textbox()
     local gpuUpdate = function()
-    local checkCmd = "gpustat --no-header | awk -F '|' '{print $2 $3}'"
+    -- local checkCmd = "gpustat --no-header -P draw | awk -F '|' '{print $2 $3}' ORS=';'"
+    local checkCmd = "gpustat --no-header -P draw | awk -F '|' '{print $2 $3}'"
     -- local checkCmd = 'gpustat --no-header'
     awful.spawn.easy_async_with_shell(
         checkCmd,
         function(out)
-            gputext:set_markup(
-                markup("#FFFFFF",
-                    space2 
-                        .. markup.font(theme.monofont, 'GPU:' .. out)))
+           local res_text="GPU "
+           for line in out:gmatch("[^\n]+") do
+              local usage = 0
+              for res in line:gmatch('(%d+)%s*%%') do
+                 usage = tonumber(res)
+              end
+              local color = get_linear_gradient(usage / 100)
+              res_text = res_text .. "[" .. markup(color, line:gsub("^%s+", ""):gsub("%s+$", "")) .. "] "
+           end
+           res_text = res_text:gsub('%s+$', '')
+           
+           gputext:set_markup(
+              markup("#FFFFFF", space2 .. markup.font(theme.monofont, res_text)))
     end)
     end
 
