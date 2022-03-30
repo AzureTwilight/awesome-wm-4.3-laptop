@@ -22,28 +22,6 @@ local hotkeys_popup = require("awful.hotkeys_popup").widget
 local wallpaper = require("wallpaper")
 -- }}}
 
--- ruled.notification.connect_signal('request::rules', function()
---     -- Add a red background for urgent notifications.
---     ruled.notification.append_rule {
---         rule       = { urgency = 'critical' },
---         properties = { timeout = 0,
---                        bg = '#e1e3dd',
---                        fg = '#cc3300',
---                        opacity = 1,
---                        position = "top_middle",
---         }
---     }
-
---     -- Or green background for normal ones.
---     ruled.notification.append_rule {
---         rule       = { urgency = 'normal' },
---         properties = { bg  = nil,
---                        fg = '#ffffff',
---                        border_color = "#ffffff",
---                        border_width = 2}
---     }
--- end)
-
 -- {{{ Error handling
 if awesome.startup_errors then
     naughty.notify({ preset = naughty.config.presets.critical,
@@ -100,6 +78,7 @@ awful.layout.layouts = {
     awful.layout.suit.floating,
     lain.layout.termfair,
     lain.layout.termfair.center,
+    awful.layout.suit.max,
     -- lain.layout.cascade,
     -- awful.layout.suit.magnifier,
     -- awful.layout.suit.fair,
@@ -108,7 +87,6 @@ awful.layout.layouts = {
     --awful.layout.suit.fair.horizontal,
     --awful.layout.suit.spiral,
     --awful.layout.suit.spiral.dwindle,
-    --awful.layout.suit.max,
     --awful.layout.suit.max.fullscreen,
     --awful.layout.suit.corner.nw,
     --awful.layout.suit.corner.ne,
@@ -200,12 +178,6 @@ end)
 awful.screen.connect_for_each_screen(
    function(s) beautiful.at_screen_connect(s) end)
 
--- Update widget
-if beautiful.vpnUpdate then
-   beautiful.vpnUpdate()
-end
-
-
 -- {{{ Menu
 local function report_monitor(s)
    title = string.format("Monitor %s", s.index)
@@ -251,6 +223,12 @@ local displaymenu = {
    end },
 }
 
+local powermenu = {
+   { "Suspend", "sudo systemctl suspend" },
+   { "Sus-Hib", "sudo systemctl suspend-then-hibernate" },
+   { "Hibernate", "sudo systemctl hibernate" },
+}
+
 local servicemenu = {
    { "Restart Dropbox",
      -- if using the command directly, the dropbox will run but
@@ -259,7 +237,7 @@ local servicemenu = {
    { "Restart Emacs",
      "systemctl --user restart emacs.service"},
    { "Update VPN Widget",
-     function() beautiful.vpnUpdate() end},
+     function() beautiful.update_vpn_widget(true) end}, -- true: forec update},
 }
 
 local mymainmenu = awful.menu{
@@ -267,8 +245,10 @@ local mymainmenu = awful.menu{
         { "Awesome", myawesomemenu},--, beautiful.awesome_icon },
         -- { "Wallpaper", wallpaper.menu},
         { "Display", displaymenu},
+        { "Power", powermenu},
         { "Services", servicemenu},
-        { "Sound Setting", terminal .. ' -e alsamixer'},
+        -- { "Sound Setting", terminal .. ' -e alsamixer'},
+        { "Toggle xcompmgr[s]", "my-toggle-xcompmgr-simple" },
         { "Open terminal", terminal },
    }
 }
@@ -324,8 +304,8 @@ globalkeys = awful.util.table.join(
       {description = "Prev Wallpaper for Current Screen", group = "wallpaper"}),
 
    awful.key(
-      { altkey, "Shift", "Control" }, "3",
-      function() awful.spawn.with_shell("screenshot") end,
+      { altkey, "Shift", "Control" }, "4",
+      function() awful.spawn.with_shell("scrot -s") end,
       {description = "take a screenshot", group = "hotkeys"}),
 
     -- Hotkeys
@@ -340,6 +320,12 @@ globalkeys = awful.util.table.join(
    awful.key(
       { "Control", "Shift" }, "w",  awful.tag.viewnext,
       {description = "view next", group = "tag"}),
+   awful.key(
+      { altkey, "Control", "Shift" }, "q", function () lain.util.tag_view_nonempty(-1) end,
+      {description = "view previous nonempty", group = "tag"}),
+   awful.key(
+      { altkey, "Control", "Shift" }, "w",  function () lain.util.tag_view_nonempty(1) end,
+      {description = "view next nonempty", group = "tag"}),
    awful.key(
       { modkey,           }, "Escape", awful.tag.history.restore,
       {description = "go back", group = "tag"}),
@@ -441,18 +427,18 @@ globalkeys = awful.util.table.join(
        { altkey, "Control", "Shift" }, "r",
        function () lain.util.rename_tag() end,
        {description = "rename tag", group = "tag"}),
-    awful.key(
-       { altkey, "Control", "Shift" }, "q",
-       function () lain.util.move_tag(-1) end,
-       {description = "move tag to the left", group = "tag"}),
-    awful.key(
-       { altkey, "Control", "Shift" }, "w",
-       function () lain.util.move_tag(1) end,
-       {description = "move tag to the right", group = "tag"}),
-    awful.key(
-       { altkey, "Control", "Shift" }, "d",
-       function () lain.util.delete_tag() end,
-       {description = "delete tag", group = "tag"}),
+    -- awful.key(
+    --    { altkey, "Control", "Shift" }, "q",
+    --    function () lain.util.move_tag(-1) end,
+    --    {description = "move tag to the left", group = "tag"}),
+    -- awful.key(
+    --    { altkey, "Control", "Shift" }, "w",
+    --    function () lain.util.move_tag(1) end,
+    --    {description = "move tag to the right", group = "tag"}),
+    -- awful.key(
+       -- { altkey, "Control", "Shift" }, "d",
+       -- function () lain.util.delete_tag() end,
+       -- {description = "delete tag", group = "tag"}),
 
     -- Standard program
     awful.key(
@@ -464,7 +450,7 @@ globalkeys = awful.util.table.join(
        function () awful.spawn(newemacsclient) end,
        {description = "open emacsclient", group = "launcher"}),
     awful.key(
-       { modkey, "Control" }, "r", awesome.restart,
+       { modkey, "Control", "Shift" }, "r", awesome.restart,
        {description = "reload awesome", group = "awesome"}),
     awful.key(
        { modkey, "Control" }, "d", wallpaper.toggleShowDesktop,
@@ -643,7 +629,22 @@ globalkeys = awful.util.table.join(
        function () awful.spawn("/home/yaqi/.emacs_anywhere/bin/run") end,
        {description = "Call emacs-anywhere", group = "launcher"}),
 
+    awful.key(
+       { modkey, "Control"  }, "s", function() awful.spawn("fsearch") end,
+       {description = "rofi ssh", group = "rofi"}),
     -- Prompt
+    awful.key(
+       { modkey, "Control"  }, "r", function() awful.spawn("rofi -show run") end,
+       {description = "rofi run", group = "rofi"}),
+    awful.key(
+       { modkey, "Control"  }, "w", function() awful.spawn("rofi -show window") end,
+       {description = "rofi window", group = "rofi"}),
+    awful.key(
+       { modkey, "Control"  }, "f", function() awful.spawn("rofi -show drun") end,
+       {description = "rofi drun", group = "rofi"}),
+    -- awful.key(
+    --    { modkey, "Control"  }, "s", function() awful.spawn("rofi -show ssh") end,
+    --    {description = "rofi ssh", group = "rofi"}),
     awful.key(
        { modkey }, "r",
        function () awful.screen.focused().mypromptbox:run() end,
@@ -664,9 +665,6 @@ globalkeys = awful.util.table.join(
 
 local function opacity_adjust(c, delta)
    c.opacity = c.opacity + delta
-   -- if c.class == "Google-chrome" then
-   --    awful.spawn("transset-df -i " .. c.window .. " " .. c.opacity)
-   -- end
 end
 
 clientkeys = awful.util.table.join(
@@ -926,17 +924,28 @@ globalkeys = awful.util.table.join(
 
    -- Run or Raise
    awful.key(
+      { altkey, "Control", "Shift" }, "j",
+      function ()
+         local matcher = function (c)
+            return awful.rules.match(c, {class = "org.jabref.gui.JabRefMain"})
+         end
+         awful.client.run_or_raise('jabref', matcher)
+      end,
+      {description = "Run or Raise Jabref", group = "Application"}),
+
+   -- Clients Menu
+   awful.key(
       { altkey, "Control" }, "c",
       function ()
-         beautiful.app_menu("Google-chrome", "google-chrome")
+         my_app_menu("Google-chrome", "google-chrome")
       end,
-      {description = "Run or Raise Chrome", group = "Application"}),
+      {description = "Open Clients List for Chrome", group = "Application"}),
    awful.key(
       { altkey, "Control" }, "e",
       function ()
-         beautiful.app_menu("Emacs", "newem")
+         my_app_menu("Emacs", "newem")
       end,
-      {description = "Get a jump menu of all emacs client", group = "Application"})
+      {description = "Open Clients List for Emacsclient", group = "Application"})
 )
 -- Custom Screen Focus Movement
 
@@ -970,11 +979,14 @@ awful.rules.rules = {
     -- { rule = { class = "Firefox" },
     --   properties = { screen = 1, tag = awful.util.tagnames[1] } },
 
-    { rule_any = { class = {"Emacs", "Gnome-terminal"} },
+    { rule_any = { class = {"Emacs"} },
       properties = { opacity = 0.95 }},
 
     { rule_any = { class = {"Google-chrome", "Nautilus"} },
       properties = { opacity = 0.98 }},
+
+    { rule_any = { class = {"org.jabref.gui.JabRefMain",  "Gnome-terminal"} },
+      properties = { opacity = 0.85 }},
 
     { rule_any = { class = {"Eog", "Nautilus"} },
       properties = {titlebars_enabled = false,
@@ -984,7 +996,8 @@ awful.rules.rules = {
     { rule_any = { class = {"feh", "Mathematica", "mpv", "vlc",
                             "libprs500", "Nautilus", "Envince",
                             "onscripter", "matplotlib",
-                            "Eog", "Matplotlib", "org.jabref.gui.JabRefMain"} },
+                            "Eog", "Matplotlib", "org.jabref.gui.JabRefMain",
+                            "MEGAsync"} },
       properties = { floating = true } },
 
 	-- Set ontop clients
@@ -1128,5 +1141,5 @@ if screen:count() > 1 then
 end
 
 -- Run App at Startup
-local autorun_path = string.format("%s/.config/awesome/autorun.sh", os.getenv("HOME"))
-awful.spawn.easy_async(autorun_path, function(stdout, stderr, exitreason, exitcode) end)
+-- local autorun_path = string.format("%s/.config/awesome/autorun.sh", os.getenv("HOME"))
+-- awful.spawn.easy_async(autorun_path, function(stdout, stderr, exitreason, exitcode) end)
