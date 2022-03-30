@@ -29,19 +29,35 @@ theme.wallpaper = {
    {name="normal",
     path=os.getenv("HOME") .. "/Pictures/wallpaper/",
     mode="max", quite=true, interval=900},
-   {name="wallhaven",
-    path=os.getenv("HOME") .. "/Pictures/wallpaper-wallhaven/",
-    mode="fit", quite=true, interval=900},
-   {name="ftopx",
-    path=os.getenv("HOME") .. "/Pictures/wallpaper-ftopx/",
-    mode="max", quite=true, interval=90},
-   {name="HCG-R18",
-    path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
-    mode="fit", quite=true, interval=60,
-    -- cmd= os.getenv("HOME") .. "/Pictures/shuffle-filelist"}
-    cmd= "sqlite3 " .. os.getenv("HOME") .. "/Pictures/database.db"
-       .. " 'select FilePath from MAIN_TBL where WALLPAPER=0;' | shuf > /tmp/wall-list"
-   }
+   -- {name="wallhaven",
+   --  path=os.getenv("HOME") .. "/Pictures/wallpaper-wallhaven/",
+   --  mode="max", quite=true, interval=900},
+   -- {name="ftopx",
+   --  path=os.getenv("HOME") .. "/Pictures/wallpaper-ftopx/",
+   --  mode="max", quite=true, interval=90,
+   --  cmd="shuf " .. os.getenv("HOME") .. "/Pictures/ftopx-wall-list > /tmp/wall-list"
+   -- },
+   -- {name="HCG-R18",
+   --  path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
+   --  mode="fit", quite=true, interval=60,
+   --  -- cmd= os.getenv("HOME") .. "/Pictures/shuffle-filelist"}
+   --  cmd= "sqlite3 " .. os.getenv("HOME") .. "/Pictures/database.db"
+   --     .. " 'select FilePath from MAIN_TBL where WALLPAPER=0;' | shuf > /tmp/wall-list"
+   -- },
+   -- {name="hcg",
+   --  path=os.getenv("HOME") .. "/Pictures/wallpaper-hcg/",
+   --  mode="max", quite=true, interval=90,
+   --  cmd="shuf " .. os.getenv("HOME") .. "/Pictures/hcg-wall-list > /tmp/wall-list"
+   -- },
+   -- {name="combi-nsfw",
+   --  path="@combine",
+   --  mode="max", quite=true, interval=90,
+   --  cmd="cat " .. os.getenv("HOME") .. "/Pictures/ftopx-wall-list "
+   --     .. os.getenv("HOME") .. "/Pictures/hcg-wall-list "
+   --     .. os.getenv("HOME") .. "/Pictures/asian-wall-list "
+   --     .. os.getenv("HOME") .. "/Pictures/asiansisters-wall-list "
+   --     .. " | shuf > /tmp/wall-list"
+   -- },
 }
 
 theme.font     = "Roboto Bold 10"
