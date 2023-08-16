@@ -91,13 +91,15 @@ M.init = function()
       { "[DB Only] Set Tag", function() M.setTag() end}
    }
    
-   M.menu = {
-      { "Refresh Wallpaper", function() M.refresh() end},
-      { "Set Clients Opacity", function() setAllClientsOpacity() end},
-      { "Wallpaper Actions", wallpaperActionMenu},
-      { "Gallery Actions", galleryActionMenu},
-      { "Switch Wallpaper Gallery", toggleMenu},
-   }
+   M.menu = awful.menu({
+         items = {
+            { "Refresh Wallpaper", function() M.refresh() end},
+            { "Set Clients Opacity", function() setAllClientsOpacity() end},
+            { "Wallpaper Actions", wallpaperActionMenu},
+            { "Gallery Actions", galleryActionMenu},
+            { "Switch Wallpaper Gallery", toggleMenu},
+         }
+   })
 
    M.updateFilelist(true)
    M.timer = gears.timer {

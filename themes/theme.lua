@@ -26,17 +26,17 @@ theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/icons"
 -- theme.wallpaper_alter = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
 
 theme.wallpaper = {
-   {name="normal",
+   {name="Normal",
     path=os.getenv("HOME") .. "/Pictures/wallpaper/",
     mode="max", quite=true, interval=900},
    -- {name="wallhaven",
    --  path=os.getenv("HOME") .. "/Pictures/wallpaper-wallhaven/",
    --  mode="max", quite=true, interval=900},
-   -- {name="ftopx",
-   --  path=os.getenv("HOME") .. "/Pictures/wallpaper-ftopx/",
-   --  mode="max", quite=true, interval=90,
-   --  cmd="shuf " .. os.getenv("HOME") .. "/Pictures/ftopx-wall-list > /tmp/wall-list"
-   -- },
+   {name="Adult",
+    path=os.getenv("HOME") .. "/Pictures/wallpaper-adult/",
+    mode="max", quite=true, interval=90,
+    cmd="shuf " .. os.getenv("HOME") .. "/Pictures/wallpaper-adult-filelist > /tmp/wall-list"
+   },
    -- {name="HCG-R18",
    --  path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
    --  mode="fit", quite=true, interval=60,
@@ -285,35 +285,26 @@ local openvpn_status_old = nil
 
 theme.update_vpn_widget = function(force_flg)
    awful.spawn.easy_async_with_shell(
-      "pgrep openvpn",
+      "nordvpn status",
       function(out, err, reason, code)
-         local openvpn_is_running
-         if code == 0 then
-            openvpn_is_running = true
-         else
-            openvpn_is_running = false
-         end
-
          -- only update when forced or the status changed
-         if force_flg == true or openvpn_status_old ~= openvpn_is_running then
-            if openvpn_is_running then -- connected
-               awful.spawn.easy_async_with_shell(
-                  "curl -s https://freegeoip.app/csv/$(curl -s ifconfig.co)" ..
-                  " | awk -F ',' '{print $6 \", \" $2 \"@\" $1 }'",
-                  function(out)
-                     -- local location = out:gsub("@.*$", "")
-                     -- local ip_addr = out:gsub("^[^@]*@", "")
+         -- if force_flg == true or openvpn_status_old ~= openvpn_is_running then
+         --    if openvpn_is_running then -- connected
+         --       awful.spawn.easy_async_with_shell(
+         --          "curl -s https://freegeoip.app/csv/$(curl -s ifconfig.co -4)" ..
+         --          " | awk -F ',' '{print $6 \", \" $2 \"@\" $1 }'",
+         --          function(out)
+         --             -- local location = out:gsub("@.*$", "")
+         --             -- local ip_addr = out:gsub("^[^@]*@", "")
                      
-                     local text = space2 .. markup.font(theme.monofont, "VPN " .. markup(my_green, out) .. "  ") .. space2
-                     vpntext:set_markup(text)
-                  end
-               )
-            else
-               vpntext:set_markup(vpnOffMarkup)
-            end
-         end
-
-         openvpn_status_old = openvpn_is_running
+         --             local text = space2 .. markup.font(theme.monofont, "VPN " .. markup(my_green, out) .. "  ") .. space2
+         --             vpntext:set_markup(text)
+         --          end
+         --       )
+         --    else
+         --       vpntext:set_markup(vpnOffMarkup)
+         --    end
+         -- end
    end)
 end
 
@@ -620,9 +611,9 @@ local net = lain.widget.net({
          widget:set_markup(
             -- "  ⬇ " .. markup.font(theme.monofont, formatSpeed(net_now.received))
             --    .. " - ⬆ " .. markup.font(theme.monofont, formatSpeed(net_now.sent)) .. "  ")
-            -- 51200 KB: 50 MB/s  3072 KB: 3MB/s
-            space2 .. markup.font(theme.monofont, formatSpeed(net_now.received, 51200) .. " [D]" ) ..
-            space2 .. markup.font(theme.monofont, formatSpeed(net_now.sent, 3072) .. " [U]") .. space2)
+            -- 122880 KB: 50 MB/s  10240 KB: 10MB/s
+            space2 .. markup.font(theme.monofont, formatSpeed(net_now.received, 122880) .. " [D]" ) ..
+            space2 .. markup.font(theme.monofont, formatSpeed(net_now.sent, 10240) .. " [U]") .. space2)
       end
 })
 local netbg = wibox.container.background(
@@ -767,13 +758,13 @@ function theme.at_screen_connect(s)
         height = 32,
         bg     = theme.bg_normal})
    if s == screen.primary then
-      s.mysystray = wibox.widget.systray()
+      local mysystray = wibox.widget.systray()
       -- TODO: not sure if this is needed
       local mysystraybg = wibox.container.background(
          wibox.widget{
             layout=wibox.layout.fixed.horizontal,
             space4Widget,
-            s.mysystray,
+            mysystray,
             space4Widget
          },
          theme.bg_focus_bare, widgetBackgroundShape)
