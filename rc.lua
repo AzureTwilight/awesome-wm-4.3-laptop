@@ -68,11 +68,12 @@ awful.util.tagnames = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }
 awful.layout.layouts = {
     awful.layout.suit.tile,
     awful.layout.suit.tile.top,
-    lain.layout.centerwork,
-    awful.layout.suit.floating,
+    -- awful.layout.suit.floating,
     lain.layout.termfair,
-    lain.layout.termfair.center,
+    -- lain.layout.termfair.center,
+    -- lain.layout.cascade.tile,
     awful.layout.suit.max,
+    lain.layout.centerwork,
     -- lain.layout.cascade,
     -- awful.layout.suit.magnifier,
     -- awful.layout.suit.fair,
@@ -86,20 +87,8 @@ awful.layout.layouts = {
     --awful.layout.suit.corner.ne,
     --awful.layout.suit.corner.sw,
     --awful.layout.suit.corner.se,
-    --lain.layout.cascade.tile,
     --lain.layout.centerwork.horizontal,
 }
-
-lain.layout.termfair.nmaster           = 3
-lain.layout.termfair.ncol              = 1
-lain.layout.termfair.center.nmaster    = 3
-lain.layout.termfair.center.ncol       = 1
-lain.layout.cascade.tile.offset_x      = 2
-lain.layout.cascade.tile.offset_y      = 32
-lain.layout.cascade.tile.extra_padding = 5
-lain.layout.cascade.tile.nmaster       = 5
-lain.layout.cascade.tile.ncol          = 2
-
 
 awful.util.taglist_buttons = awful.util.table.join(
    awful.button({ }, 1, function(t) t:view_only() end),
@@ -172,7 +161,7 @@ mymenu.main:add(
         root.keys(globalkeys)
      end
    },
-   6
+   6 -- secont to last
 )
 
 -- Setup Wallpaper Accordingly
@@ -228,7 +217,7 @@ awful.rules.rules = {
          buttons = clientbuttons,
          screen = awful.screen.preferred,
          placement = awful.placement.no_overlap+awful.placement.no_offscreen,
-         size_hints_honor = false
+         size_hints_honor = false -- false to remove gap
      }
     },
 

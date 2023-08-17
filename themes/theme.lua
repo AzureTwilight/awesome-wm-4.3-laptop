@@ -10,6 +10,7 @@
 
 local screen  = screen
 local gears   = require("gears")
+local gtable  = require("gears.table")
 local lain    = require("lain")
 local awful   = require("awful")
 local wibox   = require("wibox")
@@ -726,30 +727,42 @@ function theme.at_screen_connect(s)
       0, 0, 5, 5)
    
    -- Create the indicator
-   if screen:count() > 1 then
-      s.focuswidget = wibox.widget {
-         checked       = (s == awful.screen.focused()),
-         color         = my_green, --beautiful.bg_normal,
-         paddings      = 2,
-         shape         = gears.shape['circle'],
-         widget        = wibox.widget.checkbox,
-         --    visible       = (s == awful.screen.focused()),
-      }
-      s.myfocuswidget = wibox.container.margin(s.focuswidget, 0, 0, 5, 5)
-   else
-      s.myfocuswidget = nil
-   end
+   s.focuswidget = wibox.widget {
+      checked       = (s == awful.screen.focused()),
+      color         = my_green, --beautiful.bg_normal,
+      paddings      = 2,
+      shape         = gears.shape['circle'],
+      widget        = wibox.widget.checkbox,
+      --    visible       = (s == awful.screen.focused()),
+   }
+   s.myfocuswidget = wibox.container.margin(s.focuswidget, 0, 0, 5, 5)
 
    -- Create a tasklist widget
-   s.mytasklist = awful.widget.tasklist(
-      s, awful.widget.tasklist.filter.currenttags,
-      awful.util.tasklist_buttons,
-      { bg_focus = theme.tasklist_bg_focus,
-        fg_focus = theme.tasklist_fg_focus,
-        shape = gears.shape.rounded_bar,
-        shape_border_width = theme.tasklist_border_width,
-        shape_border_color = theme.tasklist_border_color,
-        align = "center" })
+   local tasklistStyle =  {
+      bg_focus = theme.tasklist_bg_focus,
+      fg_focus = theme.tasklist_fg_focus,
+      shape = gears.shape.rounded_bar,
+      shape_border_width = theme.tasklist_border_width,
+      shape_border_color = theme.tasklist_border_color,
+      align = "center"
+   }
+   s.mytasklist = awful.widget.tasklist({
+         screen = s,
+         filter = awful.widget.tasklist.filter.currenttags,
+         buttons = awful.util.tasklist_buttons,
+         update_function = function(w, buttons, label, data, objects, args)
+            -- Use below function to add a post-hook
+            local function new_label(c, tb)
+               local text, bg, bg_image, icon, other_args = label(c, tb)
+               local cidx = gtable.hasitem(objects, c)
+               local _, endIdx = string.find(text, '^<[^>]*>') 
+               text = text:sub(1, endIdx) .. tostring(cidx) .. '-' .. text:sub(endIdx+1)
+               return text, bg, bg_image, icon, other_args
+            end
+            awful.widget.common.list_update(w, buttons, new_label, data, objects, args)
+         end,
+         style =  tasklistStyle
+   })
 
    -- Create the wibox
    s.mywibox = awful.wibar(

@@ -6,10 +6,11 @@ local awful         = require("awful")
 local beautiful     = require("beautiful")
 local naughty       = require("naughty")
 local lain    = require("lain")
-local os = os
-local next = next
-local math = math
-local table = table
+local os, next, math, table = os, next, math, table
+
+local modkey         = "Mod4"
+local hyperkey       = "Mod3"
+local altkey         = "Mod1"
 
 local M = {}
 local notiWidth = 600
@@ -577,5 +578,57 @@ M.toggleShowDesktop = function()
     end
 
 end -- M.toggleShowDesktop
+
+M.keybindings = awful.util.table.join(
+    awful.key(
+        { modkey,  }, "F5",
+        function()
+           M.refresh(true)
+        end,
+        {description = "Refresh wallpaper (next)", group = "wallpaper"}),
+    awful.key(
+        { modkey,  "Shift" }, "F5",
+        function()
+           M.refresh(true, -1)
+        end,
+        {description = "Refresh wallpaper (prev)", group = "wallpaper"}),
+    awful.key(
+        { modkey,  }, "F1",
+        function()
+           M.showWallpaperInfo(awful.screen.focused())
+        end,
+        {description = "Show wallpaper info", group = "wallpaper"}),
+    awful.key(
+        { modkey, altkey  }, "i",
+        function()
+           M.ignoreCurrentWallpaper(awful.screen.focused())
+        end,
+        {description = "Ignore current focused wallpaper", group = "wallpaper"}),
+    awful.key(
+        { modkey, altkey, "Shift"  }, "i",
+        function()
+           M.ignoreCurrentWallpaper(awful.screen.focused(), true)
+        end,
+        {description = "Accept current focused wallpaper", group = "wallpaper"}),
+    awful.key(
+        { modkey, altkey,  }, "Right",
+        function()
+           M.shiftWallpaperForCurrentScreen(awful.screen.focused(), 0)
+        end,
+        {description = "Next Wallpaper for Current Screen", group = "wallpaper"}),
+    awful.key(
+        { modkey, altkey,  }, "Left",
+        function()
+           M.shiftWallpaperForCurrentScreen(awful.screen.focused(), -1)
+        end,
+        {description = "Prev Wallpaper for Current Screen", group = "wallpaper"}),
+      awful.key(
+         { modkey,           }, "d",
+         function () M.menu:show() end,
+         {description = "show wallpaper menu", group = "awesome"}),
+      awful.key(
+         { modkey, "Control" }, "d", M.toggleShowDesktop,
+         {description = "Show Desktop", group = "awesome"})
+)
 
 return M
