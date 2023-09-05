@@ -19,7 +19,9 @@ local helpers = require("lain.helpers")
 local string  = string
 local os      = os
 
-local theme                                     = {}
+local volumeWidget = require('awesome-wm-widgets.volume-widget.volume')
+
+local theme   = {}
 
 theme.default_dir = require("awful.util").get_themes_dir() .. "default"
 theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/icons"
@@ -636,6 +638,13 @@ local myWeatherWidget = wibox.container.margin(
    0, 0, 5, 5)
 myweather.attach(myWeatherWidget)
 
+local myVolumeWidget = wibox.container.margin(
+   wibox.container.background(
+      volumeWidget{
+         widget_type = 'text'
+      }
+      , theme.bg_focus, widgetBackgroundShape),
+   0, 0, 5, 5)
 
 function theme.at_screen_connect(s)
    
@@ -788,6 +797,7 @@ function theme.at_screen_connect(s)
          spacing_widget = bar,
          spacing = 10,
          mysystraycontainer,
+         myVolumeWidget,
          -- VPN
          vpntextwidget,
          -- Net
