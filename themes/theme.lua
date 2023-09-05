@@ -725,14 +725,43 @@ function theme.at_screen_connect(s)
             -- Use below function to add a post-hook
             local function new_label(c, tb)
                local text, bg, bg_image, icon, other_args = label(c, tb)
-               local cidx = gtable.hasitem(objects, c)
+               local fcls = {}
+               for _, c in ipairs(objects) do
+                  if not (c.type == "desktop" or c.type == "dock" or c.type == "splash") then
+                    if c:isvisible() and c.focusable then
+                        table.insert(fcls, c)
+                    end
+                  end
+               end
+               local cidx = gtable.hasitem(fcls, c) or '#'
                local _, endIdx = string.find(text, '^<[^>]*>') 
                text = text:sub(1, endIdx) .. tostring(cidx) .. '-' .. text:sub(endIdx+1)
                return text, bg, bg_image, icon, other_args
             end
             awful.widget.common.list_update(w, buttons, new_label, data, objects, args)
          end,
-         style =  tasklistStyle
+         style = {
+            bg_focus = theme.tasklist_bg_focus,
+            fg_focus = theme.tasklist_fg_focus,
+            shape = gears.shape.rounded_bar,
+            shape_border_width = theme.tasklist_border_width,
+            shape_border_color = theme.tasklist_border_color,
+            align = "center"
+         },
+         layout = {
+            spacing = 10,
+            spacing_widget = {
+               {
+                  forced_width = 5,
+                  shape        = gears.shape.circle,
+                  widget       = wibox.widget.separator
+               },
+               valign = 'center',
+               halign = 'center',
+               widget = wibox.container.place,
+            },
+            layout  = wibox.layout.flex.horizontal
+         }
    })
 
    -- Create the wibox
