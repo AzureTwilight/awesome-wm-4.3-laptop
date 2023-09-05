@@ -57,6 +57,10 @@ local basicKeybindings = awful.util.table.join(
       { modkey,           }, "w",
       function () mymenu.main:show() end,
       {description = "show main menu", group = "awesome"}),
+   awful.key(
+      { modkey,           }, "s",
+      function () mymenu.script:show() end,
+      {description = "show scrcipt menu", group = "awesome"}),
    -- Layout manipulation
    awful.key(
       { modkey, "Shift"   }, "j",
@@ -109,11 +113,15 @@ local basicKeybindings = awful.util.table.join(
    -- layout adjustment
    awful.key(
       { modkey, }, "l",
-      function () awful.tag.incmwfact( 0.05) end,
+      function ()
+         awful.tag.incmwfact( 0.05)
+      end,
       {description = "increase master width factor", group = "layout"}),
    awful.key(
       { modkey, }, "h",
-      function () awful.tag.incmwfact(-0.05) end,
+      function ()
+         awful.tag.incmwfact(-0.05)
+      end,
       {description = "decrease master width factor", group = "layout"}),
    awful.key(
       { modkey, "Shift"   }, "l",
@@ -226,7 +234,7 @@ local fnKeybindings  = awful.util.table.join(
    awful.key(
       { "Shift" }, "XF86AudioRaiseVolume",
       function ()
-         awful.spawn.with_shell(
+         awful.spawn(
             string.format("%s -q set %s 1%%+",
                           beautiful.volume.cmd,
                           beautiful.volume.channel))
@@ -236,7 +244,7 @@ local fnKeybindings  = awful.util.table.join(
    awful.key(
       { "Shift" }, "XF86AudioLowerVolume",
       function ()
-         awful.spawn.with_shell(
+         awful.spawn(
             string.format("%s -q set %s 1%%-",
                           beautiful.volume.cmd,
                           beautiful.volume.channel))
@@ -246,7 +254,7 @@ local fnKeybindings  = awful.util.table.join(
    awful.key(
       { }, "XF86AudioRaiseVolume",
       function ()
-         awful.spawn.with_shell(
+         awful.spawn(
             string.format("%s -q set %s 5%%+",
                           beautiful.volume.cmd,
                           beautiful.volume.channel))
@@ -256,7 +264,7 @@ local fnKeybindings  = awful.util.table.join(
    awful.key(
       { }, "XF86AudioLowerVolume",
       function ()
-         awful.spawn.with_shell(
+         awful.spawn(
             string.format("%s -q set %s 5%%-",
                           beautiful.volume.cmd,
                           beautiful.volume.channel))
@@ -266,7 +274,7 @@ local fnKeybindings  = awful.util.table.join(
    awful.key(
       { }, "XF86AudioMute",
       function ()
-         awful.spawn.with_shell(
+         awful.spawn(
             string.format(
                "%s -q set %s toggle",
                beautiful.volume.cmd,
@@ -277,7 +285,7 @@ local fnKeybindings  = awful.util.table.join(
    awful.key(
       { altkey }, "XF86AudioMute",
       function ()
-         awful.spawn.with_shell(
+         awful.spawn(
             string.format("%s -q set %s 100%%",
                           beautiful.volume.cmd,
                           beautiful.volume.channel))
@@ -291,7 +299,7 @@ local appKeybindings = awful.util.table.join(
    -- https://github.com/lcpz/dots/blob/master/bin/screenshot 
    awful.key(
       { altkey, "Shift", "Control" }, "4",
-      function() awful.spawn.with_shell("scrot -s") end,
+      function() awful.spawn("scrot -s") end,
       {description = "take a screenshot", group = "Apps"}),
    -- Standard program
    awful.key(
@@ -305,13 +313,13 @@ local appKeybindings = awful.util.table.join(
     awful.key(
        { altkey, "Control", "Shift" }, "c",
        function ()
-          awful.spawn.with_shell("google-chrome")
+          awful.spawn("google-chrome")
        end,
        {description = "Open a New Chrome Client", group ="Apps"}),
     awful.key(
        { altkey, "Control", "Shift" }, "f",
        function ()
-          awful.spawn.with_shell("firefox")
+          awful.spawn("firefox")
        end,
        {description = "Open a New Firefox Client", group ="Apps"}),
     awful.key(
@@ -372,7 +380,7 @@ M.getGlobalkeys = function(myScreenIdx)
    local globalkeys = awful.util.table.join(
       -- Hotkeys
       awful.key(
-         { modkey,           }, "s",
+         { modkey,  "Control" }, "h",
          hotkeys_popup.show_help,
          {description = "show help", group="awesome"}),
       -------------
@@ -396,13 +404,13 @@ M.getGlobalkeys = function(myScreenIdx)
     ------------------
     -- Custom clients
       awful.key(
-         { altkey, "Control" }, "c",
+         { modkey, "Control" }, "c",
          function ()
             mymenu.app("Google-chrome", "google-chrome")
          end,
          {description = "Open Clients List for Chrome", group = "Menu"}),
       awful.key(
-         { altkey, "Control" }, "e",
+         { modkey, "Control" }, "e",
          function ()
             mymenu.app("Emacs", "newem")
          end,
