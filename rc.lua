@@ -17,7 +17,6 @@ local beautiful     = require("beautiful")
 local naughty       = require("naughty")
 local lain          = require("lain")
 local ruled         = require("ruled")
---local menubar       = require("menubar")
 -- }}}
 
 -- {{{ Error handling
@@ -73,7 +72,7 @@ awful.layout.layouts = {
     -- lain.layout.termfair.center,
     -- lain.layout.cascade.tile,
     awful.layout.suit.max,
-    lain.layout.centerwork,
+    -- lain.layout.centerwork,
     -- lain.layout.cascade,
     -- awful.layout.suit.magnifier,
     -- awful.layout.suit.fair,
@@ -161,7 +160,7 @@ mymenu.main:add(
         root.keys(globalkeys)
      end
    },
-   6 -- secont to last
+   #mymenu.main.items -- secont to last
 )
 
 -- Setup Wallpaper Accordingly
