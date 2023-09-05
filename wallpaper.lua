@@ -80,6 +80,8 @@ M.init = function()
 
    local wallpaperActionMenu = {
       { "Show Wallpaper Info", function() M.showWallpaperInfo(awful.screen.focused()) end},
+      { "View Wallpaper File", function() M.openWallpaperFile(awful.screen.focused()) end},
+      { "Open Wallpaper Directory", function() M.openWallpaperDirectory(awful.screen.focused()) end},
       { "Copied Current MD5", function() M.copyMD5(awful.screen.focused()) end},
       { "Ignore Current Wallpaper", function() M.ignoreCurrentWallpaper(awful.screen.focused()) end},
       { "Accept Current Wallpaper", function() M.ignoreCurrentWallpaper(awful.screen.focused(), true) end}
@@ -340,12 +342,9 @@ M.updateFilelist = function(doRefresh)
 end -- end of M.updateFilelist
 
 M.setAllWallpapers = function()
-   -- local f = io.open( "/tmp/awesome_wallpaper.log", 'a')
-   -- f:write(os.date("[%Y-%m-%d %H:%M:%S]") .. "\n")
    for s in screen do
-      M.setWallpaper(s) --, f)
+      M.setWallpaper(s)
    end
-   -- f:close()
 end 
 
 M.refresh = function(resetTimer, shift)
@@ -512,6 +511,27 @@ M.showWallpaperInfo = function(s)
           icon   = beautiful.refreshed, icon_size = 64, screen = s})
 end
 
+M.openWallpaperFile = function(s)
+   awful.spawn.easy_async(
+      string.format(
+         'feh --info "identify %%F" -g 1680x1050 --scale-down --auto-zoom "%s"',
+         s.wallpaper
+      ),
+      function(stdout, stderr, exitreason, exitcode) end
+   )
+end
+
+M.openWallpaperDirectory = function(s)
+   awful.spawn.easy_async(
+      string.format(
+         'nautilus --new-window "%s"',
+         s.wallpaper
+      ),
+      function(stdout, stderr, exitreason, exitcode) end
+   )
+
+end
+
 M.toggleGallery = function(idx, overrideCMD)
    M.wallpaperPath = beautiful.wallpaper[idx].path
    M.wallpaperMode = beautiful.wallpaper[idx].mode
@@ -596,6 +616,18 @@ M.keybindings = awful.util.table.join(
         { modkey,  }, "F1",
         function()
            M.showWallpaperInfo(awful.screen.focused())
+        end,
+        {description = "Show wallpaper info", group = "wallpaper"}),
+    awful.key(
+        { modkey,  }, "F2",
+        function()
+           M.openWallpaperFile(awful.screen.focused())
+        end,
+        {description = "View wallpaper file", group = "wallpaper"}),
+    awful.key(
+        { modkey,  }, "F3",
+        function()
+           M.openWallpaperDirectory(awful.screen.focused())
         end,
         {description = "Show wallpaper info", group = "wallpaper"}),
     awful.key(
