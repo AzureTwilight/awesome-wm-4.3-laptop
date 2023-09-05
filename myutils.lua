@@ -55,8 +55,6 @@ M.updateScreenList = function ()
       monitorProps = string.format(
          "%d: %d",
          k, v)
-      naughty.notify({title = "MyScreenIdx Table",
-                      text = monitorProps})
    end
 
    return myScreenIdx, myScreenIdxReverse

@@ -59,7 +59,7 @@ local servicemenu = {
      function() beautiful.update_vpn_widget(true) end}, -- true: forec update},
 }
 
-local scriptmenu = {
+local scriptmenu = awful.menu{
    { "Toggle tg download [media viewer]",
      "/home/yaqi/.local/bin/maux-toggle-tg-download 0"
    },
@@ -74,7 +74,6 @@ local mainmenu = awful.menu{
         { "Display", displaymenu},
         { "Power", powermenu},
         { "Services", servicemenu},
-        { "Scripts", scriptmenu},
         -- { "Sound Setting", terminal .. ' -e alsamixer'},
         -- { "Toggle xcompmgr[s]", "my-toggle-xcompmgr-simple" },
         { "Open terminal", terminal },
@@ -119,6 +118,7 @@ end
 
 M.wallpaper = wallpaper.menu
 M.main = mainmenu
+M.script = scriptmenu
 M.app = app_menu
 
 
