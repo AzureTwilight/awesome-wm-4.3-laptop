@@ -27,42 +27,21 @@ theme.icon_dir    = os.getenv("HOME") .. "/.config/awesome/themes/icons"
 -- theme.wallpaper_alter = os.getenv("HOME") .. "/Pictures/wallpaper-alter/"
 
 theme.wallpaper = {
-   {name="Normal",
-    path=os.getenv("HOME") .. "/Pictures/wallpaper/",
-    mode="max", quite=true, interval=900},
-   -- {name="wallhaven",
-   --  path=os.getenv("HOME") .. "/Pictures/wallpaper-wallhaven/",
-   --  mode="max", quite=true, interval=900},
-   {name="Adult",
-    path=os.getenv("HOME") .. "/Pictures/wallpaper-adult/",
-    mode="max", quite=true, interval=90,
-    cmd="shuf " .. os.getenv("HOME") .. "/Pictures/wallpaper-adult-filelist > /tmp/wall-list"
+   {
+      name="Normal",
+      path=os.getenv("HOME") .. "/Pictures/wallpaper/",
+      mode="max", quite=true, interval=600
    },
-   -- {name="HCG-R18",
-   --  path=os.getenv("HOME") .. "/Pictures/wallpaper-anime-r18/",
-   --  mode="fit", quite=true, interval=60,
-   --  -- cmd= os.getenv("HOME") .. "/Pictures/shuffle-filelist"}
-   --  cmd= "sqlite3 " .. os.getenv("HOME") .. "/Pictures/database.db"
-   --     .. " 'select FilePath from MAIN_TBL where WALLPAPER=0;' | shuf > /tmp/wall-list"
-   -- },
-   -- {name="hcg",
-   --  path=os.getenv("HOME") .. "/Pictures/wallpaper-hcg/",
-   --  mode="max", quite=true, interval=90,
-   --  cmd="shuf " .. os.getenv("HOME") .. "/Pictures/hcg-wall-list > /tmp/wall-list"
-   -- },
-   -- {name="combi-nsfw",
-   --  path="@combine",
-   --  mode="max", quite=true, interval=90,
-   --  cmd="cat " .. os.getenv("HOME") .. "/Pictures/ftopx-wall-list "
-   --     .. os.getenv("HOME") .. "/Pictures/hcg-wall-list "
-   --     .. os.getenv("HOME") .. "/Pictures/asian-wall-list "
-   --     .. os.getenv("HOME") .. "/Pictures/asiansisters-wall-list "
-   --     .. " | shuf > /tmp/wall-list"
-   -- },
+   {
+      name="Adult",
+      path=os.getenv("HOME") .. "/Pictures/wallpaper-adult/",
+      mode="max", quite=true, interval=90,
+      cmd="shuf " .. os.getenv("HOME") .. "/Pictures/wallpaper-adult-filelist > /tmp/wall-list"
+   },
 }
 
-theme.font     = "Roboto Bold 10"
-theme.monofont = "Roboto Mono Bold 10"
+theme.font     = "Noto Sans Display SemiBold 10"
+theme.monofont = "Noto Sans Mono Bold 10"
 
 local carolinaBlueWeb     = "#4B9CD3"
 local transparency = "E6"
@@ -86,19 +65,19 @@ theme.border_focus  = "#4FAAD6"
 theme.taglist_fg_focus = "#4FAAD6"
 theme.taglist_bg_focus = theme.bg_focus
 theme.taglist_fg_empty = "#505050"
-theme.taglist_font     = "Roboto Condensed 10"
+theme.taglist_font     = "NumbersIndicia 12"
 
 theme.tasklist_fg_focus     = "#4FAAD6"
 theme.tasklist_bg_focus     = "#505050" .. "CC" -- brighter
 -- theme.tasklist_border_color = "#505050"
-theme.tasklist_border_width = 0
-theme.tasklist_border_color = nil
+theme.tasklist_border_width = 1
+theme.tasklist_border_color = "#777777"
 theme.tasklist_fg_minimize  = "#777777"
 theme.tasklist_floating     = "[F]"
 theme.tasklist_maximized    = "[M]"
 theme.tasklist_ontop        = "[T]"
-theme.tasklist_font         = "Roboto Mono 10"
-theme.tasklist_font_focus   = "Roboto Mono Bold 10"
+theme.tasklist_font         = "Noto Sans Mono 10"
+theme.tasklist_font_focus   = "Noto Sans Mono ExtraBold 10"
 theme.tasklist_disable_icon = true
 
 theme.systray_icon_spacing = 4
@@ -107,7 +86,7 @@ theme.bg_systray = theme.bg_focus_bare
 theme.notification_icon_size = 64
 theme.notification_opacity   = 0.9
 theme.notification_shape     = gears.shape.rounded_rect
-theme.notification_font      = "Roboto Mono 14"
+theme.notification_font      = "Noto Sans Mono 14"
 
 theme.prompt_fg_cursor =  "#4FAAD6"
 
@@ -738,14 +717,6 @@ function theme.at_screen_connect(s)
    s.myfocuswidget = wibox.container.margin(s.focuswidget, 0, 0, 5, 5)
 
    -- Create a tasklist widget
-   local tasklistStyle =  {
-      bg_focus = theme.tasklist_bg_focus,
-      fg_focus = theme.tasklist_fg_focus,
-      shape = gears.shape.rounded_bar,
-      shape_border_width = theme.tasklist_border_width,
-      shape_border_color = theme.tasklist_border_color,
-      align = "center"
-   }
    s.mytasklist = awful.widget.tasklist({
          screen = s,
          filter = awful.widget.tasklist.filter.currenttags,
